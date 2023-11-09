@@ -1,7 +1,7 @@
 package pl.szlify.codingapi.model;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.util.List;
@@ -14,7 +14,7 @@ public class NauczycielModel {
     @NotBlank(message = "Nazwisko nie moze byc puste")
     private String nazwisko;
     private Boolean usuniety;
-    @NotEmpty(message = "Nauczyciel musi umiec jezyk")
+    @Size(min = 1, message = "Lista języków nie może być pusta")
     private List<String> jezyki;
     private List<Long> listaKursantow;
 }
