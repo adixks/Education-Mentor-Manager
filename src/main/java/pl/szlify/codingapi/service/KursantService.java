@@ -1,72 +1,82 @@
 package pl.szlify.codingapi.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.szlify.codingapi.exceptions.BrakKursantaException;
 import pl.szlify.codingapi.exceptions.BrakNauczycielaException;
 import pl.szlify.codingapi.exceptions.ZlyJezykException;
+import pl.szlify.codingapi.model.KursantNajwInfoDto;
 import pl.szlify.codingapi.repository.KursantRepository;
 import pl.szlify.codingapi.repository.NauczycielRepository;
-import pl.szlify.codingapi.entity.Kursant;
-import pl.szlify.codingapi.entity.Nauczyciel;
+import pl.szlify.codingapi.model.KursantEntity;
+import pl.szlify.codingapi.model.NauczycielEntity;
 import pl.szlify.codingapi.mapper.KursantMapper;
-import pl.szlify.codingapi.model.KursantModel;
+import pl.szlify.codingapi.model.KursantDto;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class KursantService {
-    private KursantRepository kursantRepository;
-    private NauczycielRepository nauczycielRepository;
-    private KursantMapper kursantMapper;
+    private final KursantRepository kursantRepository;
+    private final NauczycielRepository nauczycielRepository;
+    private final KursantMapper kursantMapper;
 
-    public KursantService(KursantRepository kursantRepository, NauczycielRepository nauczycielRepository, KursantMapper kursantMapper) {
-        this.kursantRepository = kursantRepository;
-        this.nauczycielRepository = nauczycielRepository;
-        this.kursantMapper = kursantMapper;
-    }
-
-    public List<KursantModel> pobierzKursantow() {
+    public List<KursantNajwInfoDto> pobierzKursantow() {
         return kursantRepository.findAll().stream()
-                .map(kursantMapper::from)
+                .map(kursantMapper::fromEntityToKursantNajwInfoDto)
                 .collect(Collectors.toList());
     }
 
-    public KursantModel pobierzKursanta(Long id) {
-        Kursant kursant = kursantRepository.findById(id)
+    public KursantDto pobierzKursanta(Long id) {
+        KursantEntity kursantEntity = kursantRepository.findById(id)
                 .orElseThrow(BrakKursantaException::new);
-        return kursantMapper.from(kursant);
+        return kursantMapper.fromEntityToDto(kursantEntity);
     }
 
-    public KursantModel dodajKursanta(KursantModel studentModel) {
-        Nauczyciel nauczyciel = nauczycielRepository.findById(studentModel.getNauczycielId())
+    public KursantNajwInfoDto dodajKursanta(KursantNajwInfoDto kursantNajwInfoDto) {
+        NauczycielEntity nauczycielEntity = nauczycielRepository.findByIdAndUsunietyFalse(kursantNajwInfoDto.getNauczycielId())
                 .orElseThrow(BrakNauczycielaException::new);
-        if (!nauczyciel.getJezyki().contains(studentModel.getJezyk())) {
+        if (!nauczycielEntity.getJezyki().contains(kursantNajwInfoDto.getJezyk())) {
             throw new ZlyJezykException();
         }
-        Kursant kursant = kursantMapper.from(studentModel);
-        kursant.setNauczyciel(nauczyciel);
-        kursantRepository.save(kursant);
-        return kursantMapper.from(kursant);
+        KursantEntity kursantEntity = kursantMapper.fromKursantNajwInfoDtoToEntity(kursantNajwInfoDto);
+        kursantEntity.setNauczycielEntity(nauczycielEntity);
+        return kursantMapper.fromEntityToKursantNajwInfoDto(kursantRepository.save(kursantEntity));
     }
 
-    public KursantModel aktualizujKursanta(Long id, Long nauczycielId) {
-        Kursant kursant = kursantRepository.findById(id)
+    public KursantDto aktualizujCalegoKursanta(Long id, KursantNajwInfoDto kursantNajwInfoDto) {
+        KursantEntity kursantEntity = kursantRepository.findById(id)
                 .orElseThrow(BrakKursantaException::new);
-        Nauczyciel nauczyciel = nauczycielRepository.findById(nauczycielId)
+
+        NauczycielEntity nauczycielEntity = nauczycielRepository.findByIdAndUsunietyFalse(kursantNajwInfoDto.getNauczycielId())
                 .orElseThrow(BrakNauczycielaException::new);
-        if (!nauczyciel.getJezyki().contains(kursant.getJezyk())) {
+
+        if (!nauczycielEntity.getJezyki().contains(kursantEntity.getJezyk())) {
             throw new ZlyJezykException();
         }
-        kursant.setNauczyciel(nauczyciel);
-        kursantRepository.save(kursant);
-        return kursantMapper.from(kursant);
+
+        KursantEntity updatedKursantEntity = kursantMapper.fromNajwInfoAndEntityToEntity(kursantEntity, kursantNajwInfoDto);
+        updatedKursantEntity.setNauczycielEntity(nauczycielEntity);
+        return kursantMapper.fromEntityToDto(kursantRepository.save(updatedKursantEntity));
+    }
+
+    public KursantNajwInfoDto aktualizujKursanta(Long id, Long nauczycielId) {
+        KursantEntity kursantEntity = kursantRepository.findById(id)
+                .orElseThrow(BrakKursantaException::new);
+        NauczycielEntity nauczycielEntity = nauczycielRepository.findByIdAndUsunietyFalse(nauczycielId)
+                .orElseThrow(BrakNauczycielaException::new);
+        if (!nauczycielEntity.getJezyki().contains(kursantEntity.getJezyk())) {
+            throw new ZlyJezykException();
+        }
+        kursantEntity.setNauczycielEntity(nauczycielEntity);
+        kursantRepository.save(kursantEntity);
+        return kursantMapper.fromEntityToKursantNajwInfoDto(kursantEntity);
     }
 
     public void usunKursanta(Long id) {
-        Kursant kursant = kursantRepository.findById(id)
-                .orElseThrow(BrakKursantaException::new);
-        kursant.setUsuniety(true);
-        kursantRepository.save(kursant);
+        kursantRepository.deleteById(id);
     }
 }

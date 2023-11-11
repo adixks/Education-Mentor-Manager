@@ -1,24 +1,30 @@
-package pl.szlify.codingapi.entity;
+package pl.szlify.codingapi.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
-public class Lekcja {
+@Table(name = "Lekcja")
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString
+@Accessors(chain = true)
+public class LekcjaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "KURSANT_ID")
-    private Kursant kursant;
+    private KursantEntity kursantEntity;
 
     @ManyToOne
     @JoinColumn(name = "NAUCZYCIEL_ID")
-    private Nauczyciel nauczyciel;
+    private NauczycielEntity nauczycielEntity;
 
     private LocalDateTime termin;
 }

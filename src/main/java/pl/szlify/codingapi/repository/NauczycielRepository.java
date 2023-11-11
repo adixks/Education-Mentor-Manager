@@ -1,7 +1,10 @@
 package pl.szlify.codingapi.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import pl.szlify.codingapi.entity.Nauczyciel;
+import pl.szlify.codingapi.model.NauczycielEntity;
 
-public interface NauczycielRepository extends JpaRepository<Nauczyciel, Long> {
+import java.util.Optional;
+
+public interface NauczycielRepository extends JpaRepository<NauczycielEntity, Long> {
+    Optional<NauczycielEntity> findByIdAndUsunietyFalse(Long id);
 }

@@ -1,12 +1,13 @@
 package pl.szlify.codingapi.service;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import pl.szlify.codingapi.entity.Kursant;
-import pl.szlify.codingapi.entity.Lekcja;
-import pl.szlify.codingapi.entity.Nauczyciel;
+import pl.szlify.codingapi.model.KursantEntity;
+import pl.szlify.codingapi.model.LekcjaEntity;
+import pl.szlify.codingapi.model.NauczycielEntity;
 import pl.szlify.codingapi.exceptions.*;
 import pl.szlify.codingapi.mapper.LekcjaMapper;
-import pl.szlify.codingapi.model.LekcjaModel;
+import pl.szlify.codingapi.model.LekcjaDto;
 import pl.szlify.codingapi.repository.KursantRepository;
 import pl.szlify.codingapi.repository.LekcjaRepository;
 import pl.szlify.codingapi.repository.NauczycielRepository;
@@ -17,91 +18,107 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class LekcjaService {
-    private LekcjaRepository lekcjaRepository;
-    private NauczycielRepository nauczycielRepository;
-    private KursantRepository kursantRepository;
-    private LekcjaMapper lekcjaMapper;
+    private final LekcjaRepository lekcjaRepository;
+    private final NauczycielRepository nauczycielRepository;
+    private final KursantRepository kursantRepository;
+    private final LekcjaMapper lekcjaMapper;
 
-    public LekcjaService(LekcjaRepository lekcjaRepository, NauczycielRepository nauczycielRepository, KursantRepository kursantRepository, LekcjaMapper lekcjaMapper) {
-        this.lekcjaRepository = lekcjaRepository;
-        this.nauczycielRepository = nauczycielRepository;
-        this.kursantRepository = kursantRepository;
-        this.lekcjaMapper = lekcjaMapper;
-    }
-
-    public List<LekcjaModel> pobierzWszystkieLekcje() {
+    public List<LekcjaDto> pobierzWszystkieLekcje() {
         return lekcjaRepository.findAll().stream()
-                .map(lekcjaMapper::from)
+                .map(lekcjaMapper::fromDtoToEntity)
                 .collect(Collectors.toList());
     }
 
-    public LekcjaModel pobierzLekcje(Long id) {
+    public LekcjaDto pobierzLekcje(Long id) {
         return lekcjaRepository.findById(id)
-                .map(lekcjaMapper::from)
+                .map(lekcjaMapper::fromDtoToEntity)
                 .orElseThrow(BrakLekcjiException::new);
     }
 
-    public LekcjaModel stworzLekcje(LekcjaModel lekcjaModel) {
-        if (lekcjaModel.getTermin().isBefore(LocalDateTime.now())) {
+    public LekcjaDto stworzLekcje(LekcjaDto lekcjaDto) {
+        if (lekcjaDto.getTermin().isBefore(LocalDateTime.now())) {
             throw new LekcjaWPrzeszlosciException();
         }
 
-        Optional<Kursant> optionalKursant = kursantRepository.findById(lekcjaModel.getKursantId());
-        Kursant kursant = optionalKursant.orElse(new Kursant());
-        if (!kursant.getNauczyciel().getId().equals(lekcjaModel.getNauczycielId()))
-        {
+        NauczycielEntity nauczycielEntity = nauczycielRepository
+                .findByIdAndUsunietyFalse(lekcjaDto.getNauczycielId()).orElseThrow(BrakNauczycielaException::new);
+
+        KursantEntity kursantEntity = kursantRepository
+                .findByIdAndUsunietyFalse(lekcjaDto.getKursantId()).orElseThrow(BrakKursantaException::new);
+
+        if (!kursantEntity.getNauczycielEntity().getId().equals(lekcjaDto.getNauczycielId())) {
             throw new ToNieTwojNauczycielException();
         }
 
-        List<Lekcja> existingLekcje = lekcjaRepository.findByNauczycielId(lekcjaModel.getNauczycielId());
-        for (Lekcja existingLekcja : existingLekcje) {
-            if (existingLekcja.getTermin().isEqual(lekcjaModel.getTermin())) {
-                throw new ZajetyTerminLekcjiException();
-            }
+        Optional<LekcjaEntity> existingLekcja = lekcjaRepository.findByNauczycielEntityIdAndTermin(lekcjaDto.getNauczycielId(), lekcjaDto.getTermin());
+        if (existingLekcja.isPresent()) {
+            throw new ZajetyTerminLekcjiException();
         }
 
-        Lekcja lekcja = lekcjaMapper.from(lekcjaModel);
-        Optional<Nauczyciel> optionalNauczyciel = nauczycielRepository.findById(lekcjaModel.getNauczycielId());
-        Nauczyciel nauczyciel = optionalNauczyciel.orElse(new Nauczyciel());
-
-        if (kursant.getUsuniety() || nauczyciel.getUsuniety()) {
-            throw new ElementUsunietyException();
-        }
-
-        lekcja.setNauczyciel(nauczyciel);
-        lekcja.setKursant(kursant);
-        lekcjaRepository.save(lekcja);
-        return lekcjaMapper.from(lekcja);
+        LekcjaEntity lekcjaEntity = lekcjaMapper.fromEntityToDto(lekcjaDto);
+        lekcjaEntity.setNauczycielEntity(nauczycielEntity);
+        lekcjaEntity.setKursantEntity(kursantEntity);
+        lekcjaRepository.save(lekcjaEntity);
+        return lekcjaMapper.fromDtoToEntity(lekcjaEntity);
     }
 
-    public LekcjaModel aktualizujLekcje(Long id, LocalDateTime localDateTime) {
-        Lekcja lekcja = lekcjaRepository.findById(id)
+    public LekcjaDto aktualizujCalaLekcje(Long id, LekcjaDto lekcjaDto) {
+        if (lekcjaDto.getTermin().isBefore(LocalDateTime.now())) {
+            throw new LekcjaWPrzeszlosciException();
+        }
+
+        NauczycielEntity nauczycielEntity = nauczycielRepository
+                .findByIdAndUsunietyFalse(lekcjaDto.getNauczycielId()).orElseThrow(BrakNauczycielaException::new);
+
+        KursantEntity kursantEntity = kursantRepository
+                .findByIdAndUsunietyFalse(lekcjaDto.getKursantId()).orElseThrow(BrakKursantaException::new);
+
+        if (!kursantEntity.getNauczycielEntity().getId().equals(lekcjaDto.getNauczycielId())) {
+            throw new ToNieTwojNauczycielException();
+        }
+
+        Optional<LekcjaEntity> existingLekcja = lekcjaRepository.findByNauczycielEntityIdAndTermin(lekcjaDto.getNauczycielId(), lekcjaDto.getTermin());
+        if (existingLekcja.isPresent()) {
+            throw new ZajetyTerminLekcjiException();
+        }
+
+        LekcjaEntity lekcjaEntity = new LekcjaEntity()
+                .setId(id)
+                .setNauczycielEntity(nauczycielEntity)
+                .setKursantEntity(kursantEntity)
+                .setTermin(lekcjaDto.getTermin());
+
+        lekcjaRepository.save(lekcjaEntity);
+        return lekcjaMapper.fromDtoToEntity(lekcjaEntity);
+    }
+
+    public LekcjaDto aktualizujLekcje(Long id, LocalDateTime localDateTime) {
+        LekcjaEntity lekcjaEntity = lekcjaRepository.findById(id)
                 .orElseThrow(BrakLekcjiException::new);
 
         if (localDateTime.isBefore(LocalDateTime.now())) {
             throw new LekcjaWPrzeszlosciException();
         }
 
-        List<Lekcja> existingLekcje = lekcjaRepository.findByNauczycielId(lekcja.getNauczyciel().getId());
-        for (Lekcja existingLekcja : existingLekcje) {
-            if (existingLekcja.getTermin().isEqual(localDateTime) && !existingLekcja.getId().equals(id)) {
-                throw new ZajetyTerminLekcjiException();
-            }
+        Optional<LekcjaEntity> existingLekcja = lekcjaRepository.findByNauczycielEntityIdAndTermin(lekcjaEntity.getNauczycielEntity().getId(), localDateTime);
+        if (existingLekcja.isPresent()) {
+            throw new ZajetyTerminLekcjiException();
         }
 
-        lekcja.setTermin(localDateTime);
-        lekcjaRepository.save(lekcja);
-        return lekcjaMapper.from(lekcja);
+        lekcjaEntity.setTermin(localDateTime);
+        lekcjaRepository.save(lekcjaEntity);
+        return lekcjaMapper.fromDtoToEntity(lekcjaEntity);
     }
 
     public void usunLekcje(Long id) {
-        Lekcja lekcja = lekcjaRepository.findById(id)
+        LekcjaEntity lekcjaEntity = lekcjaRepository.findById(id)
                 .orElseThrow(BrakLekcjiException::new);
 
-        if (lekcja.getTermin().isBefore(LocalDateTime.now())) {
+        if (lekcjaEntity.getTermin().isBefore(LocalDateTime.now())) {
             throw new OdbytaLekcjaException();
         }
-        lekcjaRepository.delete(lekcja);
+        lekcjaRepository.deleteById(id);
     }
 }

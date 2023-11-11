@@ -1,17 +1,20 @@
 package pl.szlify.codingapi.model;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
+import lombok.experimental.Accessors;
+
+import java.util.List;
 
 @Data
-public class KursantModel {
+@Accessors(chain = true)
+public class NauczycielNajwInfoDto {
     private Long id;
     @NotBlank(message = "Imie nie moze byc puste")
     private String imie;
     @NotBlank(message = "Nazwisko nie moze byc puste")
     private String nazwisko;
-    @NotBlank(message = "Jezyk nie moze byc puste")
-    private String jezyk;
-    private Boolean usuniety;
-    private Long nauczycielId;
+    @NotEmpty(message = "Nauczyciel musi umiec jezyk")
+    private List<String> jezyki;
 }

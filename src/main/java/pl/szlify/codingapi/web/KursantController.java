@@ -1,43 +1,47 @@
 package pl.szlify.codingapi.web;
 
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.szlify.codingapi.model.KursantModel;
+import pl.szlify.codingapi.model.KursantDto;
+import pl.szlify.codingapi.model.KursantNajwInfoDto;
 import pl.szlify.codingapi.service.KursantService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/students")
+@AllArgsConstructor
+@RequestMapping("/api/v1/students")
 public class KursantController {
-    private KursantService kursantService;
-
-    public KursantController(KursantService kursantService) {
-        this.kursantService = kursantService;
-    }
+    private final KursantService kursantService;
 
     @GetMapping
-    public List<KursantModel> pobierzKursantow() {
+    public List<KursantNajwInfoDto> pobierzKursantow() {
         return kursantService.pobierzKursantow();
     }
 
-    @GetMapping("/find/{id}")
-    public KursantModel pobierzKursanta(@PathVariable Long id) {
+    @GetMapping("/{id}")
+    public KursantDto pobierzKursanta(@PathVariable Long id) {
         return kursantService.pobierzKursanta(id);
     }
 
     @PostMapping
-    public KursantModel dodajKursanta(@RequestBody KursantModel kursantModel) {
-        return kursantService.dodajKursanta(kursantModel);
+    public KursantNajwInfoDto dodajKursanta(@RequestBody KursantNajwInfoDto kursantNajwInfoDto) {
+        return kursantService.dodajKursanta(kursantNajwInfoDto);
     }
 
-    @PatchMapping("/update/{id}")
-    public KursantModel aktualizujKursanta(@PathVariable Long id, @RequestBody Long nowyNauczycielId) {
+    @PutMapping("/{id}")
+    public KursantDto aktualizujCalegoKursanta(@PathVariable Long id, @RequestBody KursantNajwInfoDto kursantNajwInfoDto) {
+        return kursantService.aktualizujCalegoKursanta(id, kursantNajwInfoDto);
+    }
+
+    @PatchMapping("/{id}")
+    public KursantNajwInfoDto aktualizujKursanta(@PathVariable Long id, @RequestBody Long nowyNauczycielId) {
         return kursantService.aktualizujKursanta(id, nowyNauczycielId);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> usunKursanta(@PathVariable Long id) {
         kursantService.usunKursanta(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

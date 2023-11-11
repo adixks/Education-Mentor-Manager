@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import pl.szlify.codingapi.model.NauczycielModel;
+import pl.szlify.codingapi.model.NauczycieDto;
 import pl.szlify.codingapi.service.NauczycielService;
 
 import java.util.Arrays;
@@ -18,7 +18,7 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class NauczycielControllerTest {
+public class NauczycielEntityControllerTest {
 
     @Mock
     private NauczycielService nauczycielService;
@@ -29,11 +29,11 @@ public class NauczycielControllerTest {
     @Test
     public void testPobierzNauczycieli() {
         // Given
-        List<NauczycielModel> nauczyciele = Arrays.asList(new NauczycielModel(), new NauczycielModel());
+        List<NauczycieDto> nauczyciele = Arrays.asList(new NauczycieDto(), new NauczycieDto());
         when(nauczycielService.pobierzNauczycieli()).thenReturn(nauczyciele);
 
         // When
-        List<NauczycielModel> result = nauczycielController.pobierzNauczycieli();
+        List<NauczycieDto> result = nauczycielController.pobierzNauczycieli();
 
         // Then
         assertEquals(nauczyciele, result);
@@ -43,11 +43,11 @@ public class NauczycielControllerTest {
     public void testPobierzNauczyciela() {
         // Given
         Long id = 1L;
-        NauczycielModel nauczyciel = new NauczycielModel();
+        NauczycieDto nauczyciel = new NauczycieDto();
         when(nauczycielService.pobierzNauczyciela(id)).thenReturn(nauczyciel);
 
         // When
-        NauczycielModel result = nauczycielController.pobierzNauczyciela(id);
+        NauczycieDto result = nauczycielController.pobierzNauczyciela(id);
 
         // Then
         assertEquals(nauczyciel, result);
@@ -56,11 +56,11 @@ public class NauczycielControllerTest {
     @Test
     public void testDodajNauczyciela() {
         // Given
-        NauczycielModel nauczyciel = new NauczycielModel();
+        NauczycieDto nauczyciel = new NauczycieDto();
         when(nauczycielService.dodajNauczyciela(nauczyciel)).thenReturn(nauczyciel);
 
         // When
-        NauczycielModel result = nauczycielController.dodajNauczyciela(nauczyciel);
+        NauczycieDto result = nauczycielController.dodajNauczyciela(nauczyciel);
 
         // Then
         assertEquals(nauczyciel, result);
@@ -71,11 +71,11 @@ public class NauczycielControllerTest {
         // Given
         Long id = 1L;
         List<String> listaJezykow = Arrays.asList("java", "c++");
-        NauczycielModel nauczyciel = new NauczycielModel();
+        NauczycieDto nauczyciel = new NauczycieDto();
         when(nauczycielService.aktualizujNauczyciela(id, listaJezykow)).thenReturn(nauczyciel);
 
         // When
-        NauczycielModel result = nauczycielController.aktualizujNauczyciela(id, listaJezykow);
+        NauczycieDto result = nauczycielController.aktualizujNauczyciela(id, listaJezykow);
 
         // Then
         assertEquals(nauczyciel, result);

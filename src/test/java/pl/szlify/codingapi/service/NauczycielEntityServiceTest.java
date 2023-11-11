@@ -5,10 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import pl.szlify.codingapi.entity.Nauczyciel;
+import pl.szlify.codingapi.model.NauczycielEntity;
 import pl.szlify.codingapi.exceptions.BrakNauczycielaException;
 import pl.szlify.codingapi.mapper.NauczycielMapper;
-import pl.szlify.codingapi.model.NauczycielModel;
+import pl.szlify.codingapi.model.NauczycieDto;
 import pl.szlify.codingapi.repository.NauczycielRepository;
 
 import java.util.Arrays;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class NauczycielServiceTest {
+class NauczycielEntityServiceTest {
 
     @Mock
     private NauczycielRepository nauczycielRepository;
@@ -33,11 +33,11 @@ class NauczycielServiceTest {
     @Test
     void testpobierzNauczycieli() {
         // Given
-        when(nauczycielRepository.findAll()).thenReturn(Arrays.asList(new Nauczyciel(), new Nauczyciel()));
-        when(nauczycielMapper.from(any(Nauczyciel.class))).thenReturn(new NauczycielModel());
+        when(nauczycielRepository.findAll()).thenReturn(Arrays.asList(new NauczycielEntity(), new NauczycielEntity()));
+        when(nauczycielMapper.fromEntityToDto(any(NauczycielEntity.class))).thenReturn(new NauczycieDto());
 
         // When
-        List<NauczycielModel> result = nauczycielService.pobierzNauczycieli();
+        List<NauczycieDto> result = nauczycielService.pobierzNauczycieli();
 
         // Then
         assertEquals(2, result.size());
@@ -47,17 +47,17 @@ class NauczycielServiceTest {
     void testPobierzNauczyciela() {
         // Given
         Long id = 1L;
-        Nauczyciel nauczycielEntity = new Nauczyciel();
-        NauczycielModel nauczycielModel = new NauczycielModel();
+        NauczycielEntity nauczycielEntity = new NauczycielEntity();
+        NauczycieDto nauczycieDto = new NauczycieDto();
         when(nauczycielRepository.findById(id)).thenReturn(Optional.of(nauczycielEntity));
-        when(nauczycielMapper.from(nauczycielEntity)).thenReturn(nauczycielModel);
+        when(nauczycielMapper.fromEntityToDto(nauczycielEntity)).thenReturn(nauczycieDto);
 
         // When
-        NauczycielModel result = nauczycielService.pobierzNauczyciela(id);
+        NauczycieDto result = nauczycielService.pobierzNauczyciela(id);
 
         // Then
         assertNotNull(result);
-        assertEquals(nauczycielModel, result);
+        assertEquals(nauczycieDto, result);
         verify(nauczycielRepository, times(1)).findById(id);
     }
 
@@ -77,17 +77,17 @@ class NauczycielServiceTest {
     @Test
     void shouldAddNauczyciel() {
         // Given
-        NauczycielModel nauczycielModel = new NauczycielModel();
-        Nauczyciel nauczyciel = new Nauczyciel();
-        when(nauczycielMapper.from(nauczycielModel)).thenReturn(nauczyciel);
-        when(nauczycielRepository.save(nauczyciel)).thenReturn(nauczyciel);
-        when(nauczycielMapper.from(nauczyciel)).thenReturn(new NauczycielModel());
+        NauczycieDto nauczycieDto = new NauczycieDto();
+        NauczycielEntity nauczycielEntity = new NauczycielEntity();
+        when(nauczycielMapper.fromDtoToEntity(nauczycieDto)).thenReturn(nauczycielEntity);
+        when(nauczycielRepository.save(nauczycielEntity)).thenReturn(nauczycielEntity);
+        when(nauczycielMapper.fromEntityToDto(nauczycielEntity)).thenReturn(new NauczycieDto());
 
         // When
-        NauczycielModel result = nauczycielService.dodajNauczyciela(nauczycielModel);
+        NauczycieDto result = nauczycielService.dodajNauczyciela(nauczycieDto);
 
         // Then
-        assertEquals(new NauczycielModel(), result);
+        assertEquals(new NauczycieDto(), result);
     }
 
     @Test
@@ -102,19 +102,19 @@ class NauczycielServiceTest {
 
         // Then
         verify(nauczycielRepository, times(1)).findById(id);
-        verify(nauczycielRepository, never()).save(any(Nauczyciel.class));
-        verify(nauczycielMapper, never()).from(any(Nauczyciel.class));
+        verify(nauczycielRepository, never()).save(any(NauczycielEntity.class));
+        verify(nauczycielMapper, never()).fromEntityToDto(any(NauczycielEntity.class));
     }
 
     @Test
     void testUsunNauczyciela() {
         // Given
         Long id = 1L;
-        Nauczyciel nauczycielEntity = new Nauczyciel();
+        NauczycielEntity nauczycielEntity = new NauczycielEntity();
         nauczycielEntity.setId(id);
         nauczycielEntity.setUsuniety(false);
         when(nauczycielRepository.findById(id)).thenReturn(Optional.of(nauczycielEntity));
-        when(nauczycielRepository.save(any(Nauczyciel.class))).thenReturn(nauczycielEntity);
+        when(nauczycielRepository.save(any(NauczycielEntity.class))).thenReturn(nauczycielEntity);
 
         // When
         assertDoesNotThrow(() -> nauczycielService.usunNauczyciela(id));
@@ -136,6 +136,6 @@ class NauczycielServiceTest {
 
         // Then
         verify(nauczycielRepository, times(1)).findById(id);
-        verify(nauczycielRepository, never()).save(any(Nauczyciel.class));
+        verify(nauczycielRepository, never()).save(any(NauczycielEntity.class));
     }
 }
