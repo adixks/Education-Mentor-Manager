@@ -9,6 +9,7 @@ import pl.szlify.codingapi.model.NauczycielEntity;
 import pl.szlify.codingapi.exceptions.BrakNauczycielaException;
 import pl.szlify.codingapi.mapper.NauczycielMapper;
 import pl.szlify.codingapi.model.NauczycieDto;
+import pl.szlify.codingapi.model.NauczycielNajwInfoDto;
 import pl.szlify.codingapi.repository.NauczycielRepository;
 
 import java.util.Arrays;
@@ -31,16 +32,27 @@ class NauczycielEntityServiceTest {
     private NauczycielService nauczycielService;
 
     @Test
-    void testpobierzNauczycieli() {
+    void pobierzNauczycieli_shouldReturnListOfNauczycielNajwInfoDto() {
         // Given
-        when(nauczycielRepository.findAll()).thenReturn(Arrays.asList(new NauczycielEntity(), new NauczycielEntity()));
-        when(nauczycielMapper.fromEntityToDto(any(NauczycielEntity.class))).thenReturn(new NauczycieDto());
+        NauczycielEntity nauczyciel1 = new NauczycielEntity();
+        NauczycielEntity nauczyciel2 = new NauczycielEntity();
+        List<NauczycielEntity> nauczyciele = Arrays.asList(nauczyciel1, nauczyciel2);
+
+        NauczycielNajwInfoDto najwInfoDto1 = new NauczycielNajwInfoDto();
+        NauczycielNajwInfoDto najwInfoDto2 = new NauczycielNajwInfoDto();
+        List<NauczycielNajwInfoDto> najwInfoDtoList = Arrays.asList(najwInfoDto1, najwInfoDto2);
+        when(nauczycielRepository.findAll()).thenReturn(nauczyciele);
+        when(nauczycielMapper.fromEntityToNajwInfoDto(nauczyciel1)).thenReturn(najwInfoDto1);
+        when(nauczycielMapper.fromEntityToNajwInfoDto(nauczyciel2)).thenReturn(najwInfoDto2);
 
         // When
-        List<NauczycieDto> result = nauczycielService.pobierzNauczycieli();
+        List<NauczycielNajwInfoDto> result = nauczycielService.pobierzNauczycieli();
 
         // Then
-        assertEquals(2, result.size());
+        assertEquals(najwInfoDtoList, result);
+        verify(nauczycielRepository, times(1)).findAll();
+        verify(nauczycielMapper, times(1)).fromEntityToNajwInfoDto(nauczyciel1);
+        verify(nauczycielMapper, times(1)).fromEntityToNajwInfoDto(nauczyciel2);
     }
 
     @Test
@@ -75,19 +87,27 @@ class NauczycielEntityServiceTest {
     }
 
     @Test
-    void shouldAddNauczyciel() {
+    void testAktualizujCalegoNauczyciela() {
         // Given
-        NauczycieDto nauczycieDto = new NauczycieDto();
+        Long nauczycielId = 1L;
+        NauczycielNajwInfoDto nauczycielNajwInfoDto = new NauczycielNajwInfoDto();
         NauczycielEntity nauczycielEntity = new NauczycielEntity();
-        when(nauczycielMapper.fromDtoToEntity(nauczycieDto)).thenReturn(nauczycielEntity);
-        when(nauczycielRepository.save(nauczycielEntity)).thenReturn(nauczycielEntity);
-        when(nauczycielMapper.fromEntityToDto(nauczycielEntity)).thenReturn(new NauczycieDto());
+        NauczycielEntity updatedNauczycielEntity = new NauczycielEntity();
+        when(nauczycielRepository.findById(nauczycielId)).thenReturn(Optional.of(nauczycielEntity));
+        when(nauczycielRepository.save(any(NauczycielEntity.class))).thenReturn(updatedNauczycielEntity);
+        when(nauczycielMapper.fromNajwInfoAndEntityToEntity(any(NauczycielEntity.class), eq(nauczycielNajwInfoDto)))
+                .thenReturn(updatedNauczycielEntity);
+        when(nauczycielMapper.fromEntityToNajwInfoDto(updatedNauczycielEntity)).thenReturn(nauczycielNajwInfoDto);
 
         // When
-        NauczycieDto result = nauczycielService.dodajNauczyciela(nauczycieDto);
+        NauczycielNajwInfoDto result = nauczycielService.aktualizujCalegoNauczyciela(nauczycielId, nauczycielNajwInfoDto);
 
         // Then
-        assertEquals(new NauczycieDto(), result);
+        assertEquals(nauczycielNajwInfoDto, result);
+        verify(nauczycielRepository, times(1)).findById(nauczycielId);
+        verify(nauczycielRepository, times(1)).save(updatedNauczycielEntity);
+        verify(nauczycielMapper, times(1)).fromNajwInfoAndEntityToEntity(nauczycielEntity, nauczycielNajwInfoDto);
+        verify(nauczycielMapper, times(1)).fromEntityToNajwInfoDto(updatedNauczycielEntity);
     }
 
     @Test
