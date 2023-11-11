@@ -1,7 +1,11 @@
 package pl.szlify.codingapi.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import pl.szlify.codingapi.entity.Kursant;
+import pl.szlify.codingapi.model.KursantEntity;
+import pl.szlify.codingapi.model.NauczycielEntity;
 
-public interface KursantRepository extends JpaRepository<Kursant, Long> {
+import java.util.Optional;
+
+public interface KursantRepository extends JpaRepository<KursantEntity, Long> {
+    Optional<KursantEntity> findByIdAndUsunietyFalse(Long id);
 }

@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import pl.szlify.codingapi.model.LekcjaModel;
+import pl.szlify.codingapi.model.LekcjaDto;
 import pl.szlify.codingapi.service.LekcjaService;
 
 import java.time.LocalDateTime;
@@ -30,11 +30,11 @@ public class LekcjaControllerTest {
     @Test
     public void testPobierzWszystkieLekcje() {
         // Given
-        List<LekcjaModel> lekcje = Arrays.asList(new LekcjaModel(), new LekcjaModel());
+        List<LekcjaDto> lekcje = Arrays.asList(new LekcjaDto(), new LekcjaDto());
         when(lekcjaService.pobierzWszystkieLekcje()).thenReturn(lekcje);
 
         // When
-        List<LekcjaModel> result = lekcjaController.pobierzWszystkieLekcje();
+        List<LekcjaDto> result = lekcjaController.pobierzWszystkieLekcje();
 
         // Then
         assertEquals(lekcje, result);
@@ -44,11 +44,11 @@ public class LekcjaControllerTest {
     public void testPobierzLekcje() {
         // Given
         Long id = 1L;
-        LekcjaModel lekcja = new LekcjaModel();
+        LekcjaDto lekcja = new LekcjaDto();
         when(lekcjaService.pobierzLekcje(id)).thenReturn(lekcja);
 
         // When
-        LekcjaModel result = lekcjaController.pobierzLekcje(id);
+        LekcjaDto result = lekcjaController.pobierzLekcje(id);
 
         // Then
         assertEquals(lekcja, result);
@@ -57,11 +57,11 @@ public class LekcjaControllerTest {
     @Test
     public void testStworzLekcje() {
         // Given
-        LekcjaModel lekcja = new LekcjaModel();
+        LekcjaDto lekcja = new LekcjaDto();
         when(lekcjaService.stworzLekcje(lekcja)).thenReturn(lekcja);
 
         // When
-        LekcjaModel result = lekcjaController.stworzLekcje(lekcja);
+        LekcjaDto result = lekcjaController.stworzLekcje(lekcja);
 
         // Then
         assertEquals(lekcja, result);
@@ -72,11 +72,11 @@ public class LekcjaControllerTest {
         // Given
         Long id = 1L;
         LocalDateTime localDateTime = LocalDateTime.now();
-        LekcjaModel lekcja = new LekcjaModel();
+        LekcjaDto lekcja = new LekcjaDto();
         when(lekcjaService.aktualizujLekcje(id, localDateTime)).thenReturn(lekcja);
 
         // When
-        LekcjaModel result = lekcjaController.aktualizujLekcje(id, localDateTime);
+        LekcjaDto result = lekcjaController.aktualizujLekcje(id, localDateTime);
 
         // Then
         assertEquals(lekcja, result);
