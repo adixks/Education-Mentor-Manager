@@ -2,9 +2,11 @@ package pl.szlify.codingapi.model;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
-public class KursantModel {
+@Accessors(chain = true)
+public class KursantDto {
     private Long id;
     @NotBlank(message = "Imie nie moze byc puste")
     private String imie;
