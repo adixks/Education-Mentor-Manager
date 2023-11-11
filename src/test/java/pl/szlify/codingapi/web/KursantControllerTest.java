@@ -7,7 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import pl.szlify.codingapi.model.KursantModel;
+import pl.szlify.codingapi.model.KursantDto;
+import pl.szlify.codingapi.model.KursantNajwInfoDto;
 import pl.szlify.codingapi.service.KursantService;
 
 import java.util.Arrays;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class KursantControllerTest {
+class KursantControllerTest {
 
     @Mock
     private KursantService kursantService;
@@ -26,70 +27,85 @@ public class KursantControllerTest {
     private KursantController kursantController;
 
     @Test
-    public void testPobierzKursantow() {
+    void testPobierzKursantow() {
         // Given
-        List<KursantModel> kursanci = Arrays.asList(new KursantModel(), new KursantModel());
-        when(kursantService.pobierzKursantow()).thenReturn(kursanci);
+        List<KursantNajwInfoDto> kursantList = Arrays.asList(new KursantNajwInfoDto(), new KursantNajwInfoDto());
+        when(kursantService.pobierzKursantow()).thenReturn(kursantList);
 
         // When
-        List<KursantModel> result = kursantController.pobierzKursantow();
+        List<KursantNajwInfoDto> result = kursantController.pobierzKursantow();
 
         // Then
-        assertEquals(kursanci, result);
+        assertEquals(kursantList, result);
     }
 
     @Test
-    public void testPobierzKursanta() {
+    void testPobierzKursanta() {
         // Given
-        Long id = 1L;
-        KursantModel kursant = new KursantModel();
-        when(kursantService.pobierzKursanta(id)).thenReturn(kursant);
+        Long kursantId = 1L;
+        KursantDto kursantDto = new KursantDto();
+        when(kursantService.pobierzKursanta(kursantId)).thenReturn(kursantDto);
 
         // When
-        KursantModel result = kursantController.pobierzKursanta(id);
+        KursantDto result = kursantController.pobierzKursanta(kursantId);
 
         // Then
-        assertEquals(kursant, result);
+        assertEquals(kursantDto, result);
     }
 
     @Test
-    public void testDodajKursanta() {
+    void testDodajKursanta() {
         // Given
-        KursantModel kursant = new KursantModel();
-        when(kursantService.dodajKursanta(kursant)).thenReturn(kursant);
+        KursantNajwInfoDto kursantNajwInfoDto = new KursantNajwInfoDto();
+        when(kursantService.dodajKursanta(kursantNajwInfoDto)).thenReturn(kursantNajwInfoDto);
 
         // When
-        KursantModel result = kursantController.dodajKursanta(kursant);
+        KursantNajwInfoDto result = kursantController.dodajKursanta(kursantNajwInfoDto);
 
         // Then
-        assertEquals(kursant, result);
+        assertEquals(kursantNajwInfoDto, result);
     }
 
     @Test
-    public void testAktualizujKursanta() {
+    void testAktualizujCalegoKursanta() {
         // Given
-        Long id = 1L;
+        Long kursantId = 1L;
+        KursantNajwInfoDto kursantNajwInfoDto = new KursantNajwInfoDto();
+        KursantDto kursantDto = new KursantDto();
+        when(kursantService.aktualizujCalegoKursanta(kursantId, kursantNajwInfoDto)).thenReturn(kursantDto);
+
+        // When
+        KursantDto result = kursantController.aktualizujCalegoKursanta(kursantId, kursantNajwInfoDto);
+
+        // Then
+        assertEquals(kursantDto, result);
+    }
+
+    @Test
+    void testAktualizujKursanta() {
+        // Given
+        Long kursantId = 1L;
         Long nowyNauczycielId = 2L;
-        KursantModel kursant = new KursantModel();
-        when(kursantService.aktualizujKursanta(id, nowyNauczycielId)).thenReturn(kursant);
+        KursantNajwInfoDto kursantNajwInfoDto = new KursantNajwInfoDto();
+        when(kursantService.aktualizujKursanta(kursantId, nowyNauczycielId)).thenReturn(kursantNajwInfoDto);
 
         // When
-        KursantModel result = kursantController.aktualizujKursanta(id, nowyNauczycielId);
+        KursantNajwInfoDto result = kursantController.aktualizujKursanta(kursantId, nowyNauczycielId);
 
         // Then
-        assertEquals(kursant, result);
+        assertEquals(kursantNajwInfoDto, result);
     }
 
     @Test
-    public void testUsunKursanta() {
+    void testUsunKursanta() {
         // Given
-        Long id = 1L;
+        Long kursantId = 1L;
 
         // When
-        ResponseEntity<Void> responseEntity = kursantController.usunKursanta(id);
+        ResponseEntity<Void> result = kursantController.usunKursanta(kursantId);
 
         // Then
-        assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
-        verify(kursantService, times(1)).usunKursanta(id);
+        assertEquals(HttpStatus.NO_CONTENT, result.getStatusCode());
+        verify(kursantService, times(1)).usunKursanta(kursantId);
     }
 }

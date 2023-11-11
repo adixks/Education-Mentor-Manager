@@ -1,27 +1,25 @@
 package pl.szlify.codingapi.mapper;
 
 import org.springframework.stereotype.Component;
-import pl.szlify.codingapi.entity.Lekcja;
-import pl.szlify.codingapi.model.LekcjaModel;
+import pl.szlify.codingapi.model.LekcjaEntity;
+import pl.szlify.codingapi.model.LekcjaDto;
 
 @Component
 public class LekcjaMapper {
 
-    public LekcjaModel from(Lekcja entity) {
-        LekcjaModel model = new LekcjaModel();
-        model.setId(entity.getId());
-        model.setNauczycielId(entity.getNauczyciel().getId());
-        model.setKursantId(entity.getKursant().getId());
-        model.setTermin(entity.getTermin());
-        return model;
+    public LekcjaDto fromDtoToEntity(LekcjaEntity entity) {
+        return new LekcjaDto()
+                .setId(entity.getId())
+                .setNauczycielId(entity.getNauczycielEntity().getId())
+                .setKursantId(entity.getKursantEntity().getId())
+                .setTermin(entity.getTermin());
     }
 
-    public Lekcja from(LekcjaModel model) {
-        Lekcja entity = new Lekcja();
-        entity.setId(model.getId());
-        entity.setTermin(model.getTermin());
+    public LekcjaEntity fromEntityToDto(LekcjaDto model) {
+        return new LekcjaEntity()
+                .setId(model.getId())
+                .setTermin(model.getTermin());
         // MAPUJ NAUCZYCIELA I KURSANTA
-        return entity;
     }
 }
 
