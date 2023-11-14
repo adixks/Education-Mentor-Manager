@@ -1,5 +1,6 @@
 package pl.szlify.codingapi.web;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +9,7 @@ import pl.szlify.codingapi.model.StudentDto;
 import pl.szlify.codingapi.model.StudentBasicInfoDto;
 import pl.szlify.codingapi.service.StudentService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -27,17 +29,19 @@ public class StudentController {
     }
 
     @PostMapping
-    public StudentBasicInfoDto addStudent(@RequestBody StudentBasicInfoDto studentBasicInfoDto) {
+    public StudentBasicInfoDto addStudent(@Valid @RequestBody StudentBasicInfoDto studentBasicInfoDto) {
         return studentService.addStudent(studentBasicInfoDto);
     }
 
     @PutMapping("/{id}")
-    public StudentDto updateEntireStudent(@PathVariable Long id, @RequestBody StudentBasicInfoDto studentBasicInfoDto) {
+    public StudentDto updateEntireStudent(@PathVariable Long id,
+                                          @Valid @RequestBody StudentBasicInfoDto studentBasicInfoDto) {
         return studentService.updateEntireStudent(id, studentBasicInfoDto);
     }
 
     @PatchMapping("/{id}")
-    public StudentBasicInfoDto updateStudentTeacher(@PathVariable Long id, @RequestBody Long newTeacherId) {
+    public StudentBasicInfoDto updateStudentTeacher(@PathVariable Long id,
+                                                    @NotNull @RequestBody Long newTeacherId) {
         return studentService.updateStudentTeacher(id, newTeacherId);
     }
 

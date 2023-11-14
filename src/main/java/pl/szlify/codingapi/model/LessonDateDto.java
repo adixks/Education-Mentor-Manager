@@ -1,23 +1,14 @@
 package pl.szlify.codingapi.model;
 
-import lombok.Data;
+import lombok.*;
 import lombok.experimental.Accessors;
 import pl.szlify.codingapi.validator.NotDateInPast;
-import pl.szlify.codingapi.validator.NotEmptyFields;
 
 import java.time.LocalDateTime;
 
 @Data
 @Accessors(chain = true)
-public class LessonDto {
-    private Long id;
-
-    @NotEmptyFields
-    private Long studentId;
-
-    @NotEmptyFields
-    private Long teacherId;
-
+public class LessonDateDto {
     @NotDateInPast
     private LocalDateTime date;
 }
