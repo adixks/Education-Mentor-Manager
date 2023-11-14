@@ -1,9 +1,8 @@
 package pl.szlify.codingapi.model;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import pl.szlify.codingapi.validator.NotEmptyFields;
 
 import java.util.List;
 
@@ -11,12 +10,12 @@ import java.util.List;
 @Accessors(chain = true)
 public class TeacherDto {
     private Long id;
-    @NotBlank(message = "The name cannot be empty")
+    @NotEmptyFields
     private String firstName;
-    @NotBlank(message = "The name cannot be empty")
+    @NotEmptyFields
     private String lastName;
     private Boolean removed;
-    @NotEmpty(message = "Teacher must know programming language")
+    @NotEmptyFields
     private List<String> languages;
     private List<Long> studentsList;
 }

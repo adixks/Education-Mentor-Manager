@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import pl.szlify.codingapi.model.LessonDateDto;
 import pl.szlify.codingapi.model.LessonDto;
 import pl.szlify.codingapi.service.LessonService;
 
@@ -87,9 +88,9 @@ public class LessonControllerTest {
     public void updateLessonDate_shouldReturnUpdatedLessonDto() {
         // Given
         Long id = 1L;
-        LocalDateTime localDateTime = LocalDateTime.now();
+        LessonDateDto localDateTime = new LessonDateDto().setDate(LocalDateTime.now());
         LessonDto lesson = new LessonDto();
-        when(lessonService.updateLessonDate(id, localDateTime)).thenReturn(lesson);
+        when(lessonService.updateLessonDate(id, localDateTime.getDate())).thenReturn(lesson);
 
         // When
         LessonDto result = lessonController.updateLessonDate(id, localDateTime);

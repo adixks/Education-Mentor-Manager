@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.szlify.codingapi.model.TeacherDto;
 import pl.szlify.codingapi.model.TeacherBasicInfoDto;
+import pl.szlify.codingapi.model.TeacherLanguagesDto;
 import pl.szlify.codingapi.service.TeacherService;
 
 import java.util.Arrays;
@@ -86,16 +87,16 @@ class TeacherControllerTest {
     void updateTeacherLanguagesList_shouldReturnTeacherBasicInfoDto() {
         // Given
         Long id = 1L;
-        List<String> languagesList = Arrays.asList("jezyk1", "jezyk2");
+        TeacherLanguagesDto languagesList = new TeacherLanguagesDto().setLanguagesList(Arrays.asList("jezyk1", "jezyk2"));
         TeacherBasicInfoDto teacherDto = new TeacherBasicInfoDto();
-        when(teacherService.updateTeacherLanguagesList(id, languagesList)).thenReturn(teacherDto);
+        when(teacherService.updateTeacherLanguagesList(id, languagesList.getLanguagesList())).thenReturn(teacherDto);
 
         // When
         TeacherBasicInfoDto result = teacherController.updateTeacherLanguagesList(id, languagesList);
 
         // Then
         assertEquals(TeacherBasicInfoDto.class, result.getClass());
-        verify(teacherService, times(1)).updateTeacherLanguagesList(id, languagesList);
+        verify(teacherService, times(1)).updateTeacherLanguagesList(id, languagesList.getLanguagesList());
     }
 
     @Test

@@ -38,9 +38,6 @@ public class LessonService {
     }
 
     public LessonDto addLesson(LessonDto lessonDto) {
-        if (lessonDto.getDate().isBefore(LocalDateTime.now())) {
-            throw new LessonInPastException();
-        }
 
         TeacherEntity teacherEntity = teacherRepository
                 .findByIdAndRemovedFalse(lessonDto.getTeacherId()).orElseThrow(LackofTeacherException::new);
@@ -52,7 +49,8 @@ public class LessonService {
             throw new NotYourTeacherException();
         }
 
-        Optional<LessonEntity> existingLesson = lessonRepository.findByTeacherEntityIdAndDate(lessonDto.getTeacherId(), lessonDto.getDate());
+        Optional<LessonEntity> existingLesson = lessonRepository
+                .findByTeacherEntityIdAndDate(lessonDto.getTeacherId(), lessonDto.getDate());
         if (existingLesson.isPresent()) {
             throw new BusyTermLectionException();
         }
@@ -65,9 +63,6 @@ public class LessonService {
     }
 
     public LessonDto updateEntireLesson(Long id, LessonDto lessonDto) {
-        if (lessonDto.getDate().isBefore(LocalDateTime.now())) {
-            throw new LessonInPastException();
-        }
 
         TeacherEntity teacherEntity = teacherRepository
                 .findByIdAndRemovedFalse(lessonDto.getTeacherId()).orElseThrow(LackofTeacherException::new);
@@ -79,7 +74,8 @@ public class LessonService {
             throw new NotYourTeacherException();
         }
 
-        Optional<LessonEntity> existingLesson = lessonRepository.findByTeacherEntityIdAndDate(lessonDto.getTeacherId(), lessonDto.getDate());
+        Optional<LessonEntity> existingLesson = lessonRepository
+                .findByTeacherEntityIdAndDate(lessonDto.getTeacherId(), lessonDto.getDate());
         if (existingLesson.isPresent()) {
             throw new BusyTermLectionException();
         }
@@ -98,11 +94,8 @@ public class LessonService {
         LessonEntity lessonEntity = lessonRepository.findById(id)
                 .orElseThrow(NoLessonsException::new);
 
-        if (localDateTime.isBefore(LocalDateTime.now())) {
-            throw new LessonInPastException();
-        }
-
-        Optional<LessonEntity> existingLesson = lessonRepository.findByTeacherEntityIdAndDate(lessonEntity.getTeacherEntity().getId(), localDateTime);
+        Optional<LessonEntity> existingLesson = lessonRepository
+                .findByTeacherEntityIdAndDate(lessonEntity.getTeacherEntity().getId(), localDateTime);
         if (existingLesson.isPresent()) {
             throw new BusyTermLectionException();
         }
