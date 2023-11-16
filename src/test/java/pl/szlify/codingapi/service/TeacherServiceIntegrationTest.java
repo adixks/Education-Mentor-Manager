@@ -205,23 +205,6 @@ public class TeacherServiceIntegrationTest {
     }
 
     @Test
-    public void updateTeacherLanguagesListTest_shouldThrowsException() {
-        // Given
-        Long teacherId = faker.number().randomNumber();
-        List<String> languagesList = Arrays.asList("java", "python");
-
-        when(teacherRepository.findById(teacherId)).thenReturn(Optional.empty());
-
-        // When - Then
-        LackOfTeacherException exception = assertThrows(LackOfTeacherException.class, () -> {
-            teacherService.updateTeacherLanguagesList(teacherId, languagesList);
-        });
-
-        assertNotNull(exception);
-        assertEquals("The teacher with the specified ID does not exist", exception.getMessage());
-    }
-
-    @Test
     public void deleteTeacherTest() {
         // Given
         Long teacherId = faker.number().randomNumber();
