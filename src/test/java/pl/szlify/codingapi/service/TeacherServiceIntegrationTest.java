@@ -156,6 +156,24 @@ public class TeacherServiceIntegrationTest {
     }
 
     @Test
+    public void updateEntireTeacherTest_shouldThrowsException() {
+        // Given
+        Long teacherId = faker.number().randomNumber();
+        TeacherBasicInfoDto teacherBasicInfoDto = new TeacherBasicInfoDto()
+                .setFirstName(faker.name().firstName());
+
+        when(teacherRepository.findById(teacherId)).thenReturn(Optional.empty());
+
+        // When - Then
+        LackOfTeacherException exception = assertThrows(LackOfTeacherException.class, () -> {
+            teacherService.updateEntireTeacher(teacherId, teacherBasicInfoDto);
+        });
+
+        assertNotNull(exception);
+        assertEquals("The teacher with the specified ID does not exist", exception.getMessage());
+    }
+
+    @Test
     public void updateTeacherLanguagesListTest() {
         // Given
         Long teacherId = faker.number().randomNumber();
@@ -184,6 +202,23 @@ public class TeacherServiceIntegrationTest {
         assertNotNull(result);
         verify(teacherRepository, times(1)).save(any(TeacherEntity.class));
         assertEquals(expectedLanguagesList, teacherEntity.getLanguages());
+    }
+
+    @Test
+    public void updateTeacherLanguagesListTest_shouldThrowsException() {
+        // Given
+        Long teacherId = faker.number().randomNumber();
+        List<String> languagesList = Arrays.asList("java", "python");
+
+        when(teacherRepository.findById(teacherId)).thenReturn(Optional.empty());
+
+        // When - Then
+        LackOfTeacherException exception = assertThrows(LackOfTeacherException.class, () -> {
+            teacherService.updateTeacherLanguagesList(teacherId, languagesList);
+        });
+
+        assertNotNull(exception);
+        assertEquals("The teacher with the specified ID does not exist", exception.getMessage());
     }
 
     @Test
@@ -237,7 +272,7 @@ public class TeacherServiceIntegrationTest {
         when(teacherRepository.findById(teacherId)).thenReturn(Optional.of(teacherEntity));
         when(lessonRepository.findByTeacherEntityId(teacherId)).thenReturn(Optional.of(lessonEntity));
 
-        // When and Then
+        // When - Then
         LessonInFutureException exception = assertThrows(LessonInFutureException.class, () -> {
             teacherService.deleteTeacher(teacherId);
         });
