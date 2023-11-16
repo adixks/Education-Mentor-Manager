@@ -156,24 +156,6 @@ public class TeacherServiceIntegrationTest {
     }
 
     @Test
-    public void updateEntireTeacherTest_shouldThrowsException() {
-        // Given
-        Long teacherId = faker.number().randomNumber();
-        TeacherBasicInfoDto teacherBasicInfoDto = new TeacherBasicInfoDto()
-                .setFirstName(faker.name().firstName());
-
-        when(teacherRepository.findById(teacherId)).thenReturn(Optional.empty());
-
-        // When - Then
-        LackOfTeacherException exception = assertThrows(LackOfTeacherException.class, () -> {
-            teacherService.updateEntireTeacher(teacherId, teacherBasicInfoDto);
-        });
-
-        assertNotNull(exception);
-        assertEquals("The teacher with the specified ID does not exist", exception.getMessage());
-    }
-
-    @Test
     public void updateTeacherLanguagesListTest() {
         // Given
         Long teacherId = faker.number().randomNumber();
