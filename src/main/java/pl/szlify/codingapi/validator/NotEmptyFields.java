@@ -11,6 +11,8 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NotEmptyFields {
     String message() default "The field cannot be empty";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

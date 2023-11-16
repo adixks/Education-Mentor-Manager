@@ -27,20 +27,20 @@ public class LessonService {
 
     public List<LessonDto> getAllLessons() {
         return lessonRepository.findAll().stream()
-                .map(lessonMapper::fromDtoToEntity)
+                .map(lessonMapper::fromEntityToDto)
                 .collect(Collectors.toList());
     }
 
     public LessonDto getLesson(Long id) {
         return lessonRepository.findById(id)
-                .map(lessonMapper::fromDtoToEntity)
+                .map(lessonMapper::fromEntityToDto)
                 .orElseThrow(NoLessonsException::new);
     }
 
     public LessonDto addLesson(LessonDto lessonDto) {
 
         TeacherEntity teacherEntity = teacherRepository
-                .findByIdAndRemovedFalse(lessonDto.getTeacherId()).orElseThrow(LackofTeacherException::new);
+                .findByIdAndRemovedFalse(lessonDto.getTeacherId()).orElseThrow(LackOfTeacherException::new);
 
         StudentEntity studentEntity = studentRepository
                 .findByIdAndRemovedFalse(lessonDto.getStudentId()).orElseThrow(MissingStudentException::new);
@@ -52,20 +52,20 @@ public class LessonService {
         Optional<LessonEntity> existingLesson = lessonRepository
                 .findByTeacherEntityIdAndDate(lessonDto.getTeacherId(), lessonDto.getDate());
         if (existingLesson.isPresent()) {
-            throw new BusyTermLectionException();
+            throw new BusyTermLessonException();
         }
 
-        LessonEntity lessonEntity = lessonMapper.fromEntityToDto(lessonDto);
+        LessonEntity lessonEntity = lessonMapper.fromDtoToEntity(lessonDto);
         lessonEntity.setTeacherEntity(teacherEntity);
         lessonEntity.setStudentEntity(studentEntity);
         lessonRepository.save(lessonEntity);
-        return lessonMapper.fromDtoToEntity(lessonEntity);
+        return lessonMapper.fromEntityToDto(lessonEntity);
     }
 
     public LessonDto updateEntireLesson(Long id, LessonDto lessonDto) {
 
         TeacherEntity teacherEntity = teacherRepository
-                .findByIdAndRemovedFalse(lessonDto.getTeacherId()).orElseThrow(LackofTeacherException::new);
+                .findByIdAndRemovedFalse(lessonDto.getTeacherId()).orElseThrow(LackOfTeacherException::new);
 
         StudentEntity studentEntity = studentRepository
                 .findByIdAndRemovedFalse(lessonDto.getStudentId()).orElseThrow(MissingStudentException::new);
@@ -77,7 +77,7 @@ public class LessonService {
         Optional<LessonEntity> existingLesson = lessonRepository
                 .findByTeacherEntityIdAndDate(lessonDto.getTeacherId(), lessonDto.getDate());
         if (existingLesson.isPresent()) {
-            throw new BusyTermLectionException();
+            throw new BusyTermLessonException();
         }
 
         LessonEntity lessonEntity = new LessonEntity()
@@ -87,7 +87,7 @@ public class LessonService {
                 .setDate(lessonDto.getDate());
 
         lessonRepository.save(lessonEntity);
-        return lessonMapper.fromDtoToEntity(lessonEntity);
+        return lessonMapper.fromEntityToDto(lessonEntity);
     }
 
     public LessonDto updateLessonDate(Long id, LocalDateTime localDateTime) {
@@ -97,12 +97,12 @@ public class LessonService {
         Optional<LessonEntity> existingLesson = lessonRepository
                 .findByTeacherEntityIdAndDate(lessonEntity.getTeacherEntity().getId(), localDateTime);
         if (existingLesson.isPresent()) {
-            throw new BusyTermLectionException();
+            throw new BusyTermLessonException();
         }
 
         lessonEntity.setDate(localDateTime);
         lessonRepository.save(lessonEntity);
-        return lessonMapper.fromDtoToEntity(lessonEntity);
+        return lessonMapper.fromEntityToDto(lessonEntity);
     }
 
     public void deleteLesson(Long id) {

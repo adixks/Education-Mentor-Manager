@@ -5,13 +5,14 @@ import org.springframework.stereotype.Service;
 import pl.szlify.codingapi.exceptions.LessonInFutureException;
 import pl.szlify.codingapi.model.LessonEntity;
 import pl.szlify.codingapi.model.TeacherEntity;
-import pl.szlify.codingapi.exceptions.LackofTeacherException;
+import pl.szlify.codingapi.exceptions.LackOfTeacherException;
 import pl.szlify.codingapi.mapper.TeacherMapper;
 import pl.szlify.codingapi.model.TeacherDto;
 import pl.szlify.codingapi.model.TeacherBasicInfoDto;
 import pl.szlify.codingapi.repository.LessonRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,7 +32,7 @@ public class TeacherService {
 
     public TeacherDto getTeacher(Long id) {
         TeacherEntity teacherEntity = teacherRepository.findById(id)
-                .orElseThrow(LackofTeacherException::new);
+                .orElseThrow(LackOfTeacherException::new);
         return teacherMapper.fromEntityToDto(teacherEntity);
     }
 
@@ -42,7 +43,7 @@ public class TeacherService {
 
     public TeacherBasicInfoDto updateEntireTeacher(Long id, TeacherBasicInfoDto teacherBasicInfoDto) {
         TeacherEntity teacherEntity = teacherRepository.findById(id)
-                .orElseThrow(LackofTeacherException::new);
+                .orElseThrow(LackOfTeacherException::new);
         TeacherEntity updatedTeacherEntity = teacherMapper
                 .fromNajwInfoAndEntityToEntity(teacherEntity, teacherBasicInfoDto);
         return teacherMapper.fromEntityToNajwInfoDto(teacherRepository.save(updatedTeacherEntity));
@@ -50,18 +51,20 @@ public class TeacherService {
 
     public TeacherBasicInfoDto updateTeacherLanguagesList(Long id, List<String> languagesList) {
         TeacherEntity teacherEntity = teacherRepository.findById(id)
-                .orElseThrow(LackofTeacherException::new);
+                .orElseThrow(LackOfTeacherException::new);
         List<String> newLanguages = languagesList.stream()
                 .distinct()
                 .filter(language -> !teacherEntity.getLanguages().contains(language))
                 .toList();
-        teacherEntity.getLanguages().addAll(newLanguages);
+        List<String> updatedLanguages = new ArrayList<>(teacherEntity.getLanguages());
+        updatedLanguages.addAll(newLanguages);
+        teacherEntity.setLanguages(updatedLanguages);
         return teacherMapper.fromEntityToNajwInfoDto(teacherRepository.save(teacherEntity));
     }
 
     public void deleteTeacher(Long id) {
         TeacherEntity teacher = teacherRepository.findById(id)
-                .orElseThrow(LackofTeacherException::new);
+                .orElseThrow(LackOfTeacherException::new);
         Optional<LessonEntity> existingLesson = lessonRepository.findByTeacherEntityId(id);
         if (existingLesson.isPresent()) {
             throw new LessonInFutureException();
