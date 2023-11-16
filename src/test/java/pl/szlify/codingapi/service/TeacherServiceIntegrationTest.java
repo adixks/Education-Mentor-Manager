@@ -7,7 +7,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 import pl.szlify.codingapi.exceptions.LackOfTeacherException;
 import pl.szlify.codingapi.exceptions.LessonInFutureException;
 import pl.szlify.codingapi.mapper.TeacherMapper;
@@ -24,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-@ActiveProfiles("test")
 public class TeacherServiceIntegrationTest {
 
     @Autowired
