@@ -7,7 +7,7 @@ import pl.szlify.codingapi.model.LessonDto;
 @Component
 public class LessonMapper {
 
-    public LessonDto fromDtoToEntity(LessonEntity entity) {
+    public LessonDto fromEntityToDto(LessonEntity entity) {
         return new LessonDto()
                 .setId(entity.getId())
                 .setTeacherId(entity.getTeacherEntity().getId())
@@ -15,11 +15,10 @@ public class LessonMapper {
                 .setDate(entity.getDate());
     }
 
-    public LessonEntity fromEntityToDto(LessonDto model) {
+    public LessonEntity fromDtoToEntity(LessonDto model) {
         return new LessonEntity()
                 .setId(model.getId())
                 .setDate(model.getDate());
         // MAP THE TEACHER AND THE STUDENT
     }
 }
-

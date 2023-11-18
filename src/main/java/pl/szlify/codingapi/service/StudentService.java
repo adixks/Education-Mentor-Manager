@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.szlify.codingapi.exceptions.LessonInFutureException;
 import pl.szlify.codingapi.exceptions.MissingStudentException;
-import pl.szlify.codingapi.exceptions.LackofTeacherException;
+import pl.szlify.codingapi.exceptions.LackOfTeacherException;
 import pl.szlify.codingapi.exceptions.BadLanguageException;
 import pl.szlify.codingapi.model.*;
 import pl.szlify.codingapi.repository.LessonRepository;
@@ -38,7 +38,7 @@ public class StudentService {
 
     public StudentBasicInfoDto addStudent(StudentBasicInfoDto studentBasicInfoDto) {
         TeacherEntity teacherEntity = teacherRepository.findByIdAndRemovedFalse(studentBasicInfoDto.getTeacherId())
-                .orElseThrow(LackofTeacherException::new);
+                .orElseThrow(LackOfTeacherException::new);
         if (!teacherEntity.getLanguages().contains(studentBasicInfoDto.getLanguage())) {
             throw new BadLanguageException();
         }
@@ -52,7 +52,7 @@ public class StudentService {
                 .orElseThrow(MissingStudentException::new);
 
         TeacherEntity teacherEntity = teacherRepository.findByIdAndRemovedFalse(studentBasicInfoDto.getTeacherId())
-                .orElseThrow(LackofTeacherException::new);
+                .orElseThrow(LackOfTeacherException::new);
 
         if (!teacherEntity.getLanguages().contains(studentBasicInfoDto.getLanguage())) {
             throw new BadLanguageException();
@@ -69,7 +69,7 @@ public class StudentService {
                 .orElseThrow(MissingStudentException::new);
 
         TeacherEntity teacherEntity = teacherRepository.findByIdAndRemovedFalse(teacherId)
-                .orElseThrow(LackofTeacherException::new);
+                .orElseThrow(LackOfTeacherException::new);
 
         if (!teacherEntity.getLanguages().contains(studentEntity.getLanguage())) {
             throw new BadLanguageException();
