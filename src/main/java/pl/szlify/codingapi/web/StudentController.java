@@ -1,15 +1,15 @@
 package pl.szlify.codingapi.web;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.szlify.codingapi.model.StudentDto;
-import pl.szlify.codingapi.model.StudentBasicInfoDto;
+import pl.szlify.codingapi.model.dto.StudentFullDto;
+import pl.szlify.codingapi.model.dto.StudentShortDto;
 import pl.szlify.codingapi.service.StudentService;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -19,29 +19,29 @@ public class StudentController {
     private final StudentService studentService;
 
     @GetMapping
-    public List<StudentBasicInfoDto> getStudentsList() {
+    public List<StudentShortDto> getStudentsList() {
         return studentService.getStudentsList();
     }
 
     @GetMapping("/{id}")
-    public StudentDto getStudent(@PathVariable Long id) {
+    public StudentFullDto getStudent(@PathVariable Long id) {
         return studentService.getStudent(id);
     }
 
     @PostMapping
-    public StudentBasicInfoDto addStudent(@Valid @RequestBody StudentBasicInfoDto studentBasicInfoDto) {
-        return studentService.addStudent(studentBasicInfoDto);
+    public StudentShortDto addStudent(@Valid @RequestBody StudentShortDto studentShortDto) {
+        return studentService.addStudent(studentShortDto);
     }
 
     @PutMapping("/{id}")
-    public StudentDto updateEntireStudent(@PathVariable Long id,
-                                          @Valid @RequestBody StudentBasicInfoDto studentBasicInfoDto) {
-        return studentService.updateEntireStudent(id, studentBasicInfoDto);
+    public StudentFullDto updateEntireStudent(@PathVariable Long id,
+                                              @Valid @RequestBody StudentShortDto studentShortDto) {
+        return studentService.updateEntireStudent(id, studentShortDto);
     }
 
     @PatchMapping("/{id}")
-    public StudentBasicInfoDto updateStudentTeacher(@PathVariable Long id,
-                                                    @NotNull @RequestBody Long newTeacherId) {
+    public StudentShortDto updateStudentTeacher(@PathVariable Long id,
+                                                @NotNull @RequestBody Long newTeacherId) {
         return studentService.updateStudentTeacher(id, newTeacherId);
     }
 

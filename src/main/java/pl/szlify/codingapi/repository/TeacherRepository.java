@@ -6,5 +6,5 @@ import pl.szlify.codingapi.model.TeacherEntity;
 import java.util.Optional;
 
 public interface TeacherRepository extends JpaRepository<TeacherEntity, Long> {
-    Optional<TeacherEntity> findByIdAndRemovedFalse(Long id);
+    Optional<TeacherEntity> findByIdAndDeletedFalse(Long id);
 }

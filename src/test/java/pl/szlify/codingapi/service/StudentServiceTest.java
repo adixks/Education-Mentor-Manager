@@ -13,6 +13,8 @@ import pl.szlify.codingapi.exceptions.LessonInFutureException;
 import pl.szlify.codingapi.exceptions.MissingStudentException;
 import pl.szlify.codingapi.mapper.StudentMapper;
 import pl.szlify.codingapi.model.*;
+import pl.szlify.codingapi.model.dto.StudentShortDto;
+import pl.szlify.codingapi.model.dto.StudentFullDto;
 import pl.szlify.codingapi.repository.LessonRepository;
 import pl.szlify.codingapi.repository.StudentRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
@@ -59,19 +61,18 @@ public class StudentServiceTest {
                 .setId(faker.number().randomNumber())
                 .setFirstName(faker.name().fullName());
 
-        StudentBasicInfoDto studentBasicInfoDto = new StudentBasicInfoDto()
-                .setId(studentEntity.getId())
+        StudentShortDto studentShortDto = new StudentShortDto()
                 .setFirstName(studentEntity.getFirstName());
 
         when(studentRepository.findAll()).thenReturn(Collections.singletonList(studentEntity));
-        when(studentMapper.fromEntityToBasicInfoDto(studentEntity)).thenReturn(studentBasicInfoDto);
+        when(studentMapper.toShortDto(studentEntity)).thenReturn(studentShortDto);
 
         // When
-        List<StudentBasicInfoDto> result = studentService.getStudentsList();
+        List<StudentShortDto> result = studentService.getStudentsList();
 
         // Then
         assertEquals(1, result.size());
-        assertEquals(studentBasicInfoDto, result.get(0));
+        assertEquals(studentShortDto, result.get(0));
     }
 
     @Test
@@ -82,18 +83,18 @@ public class StudentServiceTest {
                 .setId(id)
                 .setFirstName(faker.name().fullName());
 
-        StudentDto studentDto = new StudentDto()
+        StudentFullDto studentFullDto = new StudentFullDto()
                 .setId(studentEntity.getId())
                 .setFirstName(studentEntity.getFirstName());
 
         when(studentRepository.findById(id)).thenReturn(Optional.of(studentEntity));
-        when(studentMapper.fromEntityToDto(studentEntity)).thenReturn(studentDto);
+        when(studentMapper.toFullDto(studentEntity)).thenReturn(studentFullDto);
 
         // When
-        StudentDto result = studentService.getStudent(id);
+        StudentFullDto result = studentService.getStudent(id);
 
         // Then
-        assertEquals(studentDto, result);
+        assertEquals(studentFullDto, result);
     }
 
     @Test
@@ -107,7 +108,7 @@ public class StudentServiceTest {
 
         // Then
         verify(studentRepository, times(1)).findById(nonExistingStudentId);
-        verify(studentMapper, never()).fromEntityToDto(any());
+        verify(studentMapper, never()).toFullDto(any());
     }
 
     @Test
@@ -118,44 +119,44 @@ public class StudentServiceTest {
                 .setId(teacherId)
                 .setLanguages(Collections.singletonList("java"));
 
-        StudentBasicInfoDto studentBasicInfoDto = new StudentBasicInfoDto()
+        StudentShortDto studentShortDto = new StudentShortDto()
                 .setTeacherId(teacherId)
                 .setLanguage("java");
 
         StudentEntity studentEntity = new StudentEntity()
-                .setTeacherEntity(teacherEntity);
+                .setTeacher(teacherEntity);
 
-        when(teacherRepository.findByIdAndRemovedFalse(teacherId)).thenReturn(Optional.of(teacherEntity));
-        when(studentMapper.fromBasicInfoDtoToEntity(studentBasicInfoDto)).thenReturn(studentEntity);
+        when(teacherRepository.findByIdAndDeletedFalse(teacherId)).thenReturn(Optional.of(teacherEntity));
+        when(studentMapper.toEntity(studentShortDto)).thenReturn(studentEntity);
         when(studentRepository.save(studentEntity)).thenReturn(studentEntity);
-        when(studentMapper.fromEntityToBasicInfoDto(studentEntity)).thenReturn(studentBasicInfoDto);
+        when(studentMapper.toShortDto(studentEntity)).thenReturn(studentShortDto);
 
         // When
-        StudentBasicInfoDto result = studentService.addStudent(studentBasicInfoDto);
+        StudentShortDto result = studentService.addStudent(studentShortDto);
 
         // Then
-        assertEquals(studentBasicInfoDto, result);
+        assertEquals(studentShortDto, result);
     }
 
     @Test
     void addStudentTest_shouldThrowsLackOfTeacherException() {
         // Given
-        StudentBasicInfoDto studentBasicInfoDto = createFakeStudentBasicInfoDto();
-        when(teacherRepository.findByIdAndRemovedFalse(any())).thenReturn(Optional.empty());
+        StudentShortDto studentShortDto = createFakeStudentBasicInfoDto();
+        when(teacherRepository.findByIdAndDeletedFalse(any())).thenReturn(Optional.empty());
 
         // When - Then
-        assertThrows(LackOfTeacherException.class, () -> studentService.addStudent(studentBasicInfoDto));
+        assertThrows(LackOfTeacherException.class, () -> studentService.addStudent(studentShortDto));
     }
 
     @Test
     void addStudent_ThrowsBadLanguageException() {
         // Given
-        StudentBasicInfoDto studentBasicInfoDto = createFakeStudentBasicInfoDto();
-        when(teacherRepository.findByIdAndRemovedFalse(any())).thenReturn(Optional.of(teacherEntity));
+        StudentShortDto studentShortDto = createFakeStudentBasicInfoDto();
+        when(teacherRepository.findByIdAndDeletedFalse(any())).thenReturn(Optional.of(teacherEntity));
         when(teacherEntity.getLanguages()).thenReturn(Collections.emptyList());
 
         // When - Then
-        assertThrows(BadLanguageException.class, () -> studentService.addStudent(studentBasicInfoDto));
+        assertThrows(BadLanguageException.class, () -> studentService.addStudent(studentShortDto));
     }
 
     @Test
@@ -167,68 +168,68 @@ public class StudentServiceTest {
                 .setId(teacherId)
                 .setLanguages(Collections.singletonList("java"));
 
-        StudentBasicInfoDto studentBasicInfoDto = new StudentBasicInfoDto()
+        StudentShortDto studentShortDto = new StudentShortDto()
                 .setTeacherId(teacherId)
                 .setLanguage("java");
 
         StudentEntity studentEntity = new StudentEntity()
                 .setId(id)
-                .setTeacherEntity(teacherEntity);
+                .setTeacher(teacherEntity);
 
-        StudentDto studentDto = new StudentDto()
+        StudentFullDto studentFullDto = new StudentFullDto()
                 .setId(id)
                 .setTeacherId(teacherId)
                 .setLanguage("java");
 
         when(studentRepository.findById(id)).thenReturn(Optional.of(studentEntity));
-        when(teacherRepository.findByIdAndRemovedFalse(teacherId)).thenReturn(Optional.of(teacherEntity));
-        when(studentMapper.fromBasicInfoAndEntityToEntity(studentEntity, studentBasicInfoDto)).thenReturn(studentEntity);
+        when(teacherRepository.findByIdAndDeletedFalse(teacherId)).thenReturn(Optional.of(teacherEntity));
+        when(studentMapper.toEntityUpdate(studentEntity, studentShortDto)).thenReturn(studentEntity);
         when(studentRepository.save(studentEntity)).thenReturn(studentEntity);
-        when(studentMapper.fromEntityToDto(studentEntity)).thenReturn(studentDto);
+        when(studentMapper.toFullDto(studentEntity)).thenReturn(studentFullDto);
 
         // When
-        StudentDto result = studentService.updateEntireStudent(id, studentBasicInfoDto);
+        StudentFullDto result = studentService.updateEntireStudent(id, studentShortDto);
 
         // Then
-        assertEquals(studentDto, result);
+        assertEquals(studentFullDto, result);
     }
 
     @Test
     void updateEntireStudent_ThrowsMissingStudentException() {
         // Given
         Long studentId = 1L;
-        StudentBasicInfoDto studentBasicInfoDto = createFakeStudentBasicInfoDto();
+        StudentShortDto studentShortDto = createFakeStudentBasicInfoDto();
         when(studentRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         // When - Then
-        assertThrows(MissingStudentException.class, () -> studentService.updateEntireStudent(studentId, studentBasicInfoDto));
+        assertThrows(MissingStudentException.class, () -> studentService.updateEntireStudent(studentId, studentShortDto));
     }
 
     @Test
     void updateEntireStudent_ThrowsLackOfTeacherException() {
         // Given
         Long studentId = 1L;
-        StudentBasicInfoDto studentBasicInfoDto = createFakeStudentBasicInfoDto();
+        StudentShortDto studentShortDto = createFakeStudentBasicInfoDto();
         when(studentRepository.findById(anyLong())).thenReturn(Optional.of(new StudentEntity()));
-        when(teacherRepository.findByIdAndRemovedFalse(any())).thenReturn(Optional.empty());
+        when(teacherRepository.findByIdAndDeletedFalse(any())).thenReturn(Optional.empty());
 
         // When - Then
-        assertThrows(LackOfTeacherException.class, () -> studentService.updateEntireStudent(studentId, studentBasicInfoDto));
+        assertThrows(LackOfTeacherException.class, () -> studentService.updateEntireStudent(studentId, studentShortDto));
     }
 
     @Test
     void updateEntireStudent_ThrowsBadLanguageException() {
         // Given
         Long studentId = 1L;
-        StudentBasicInfoDto studentBasicInfoDto = createFakeStudentBasicInfoDto();
+        StudentShortDto studentShortDto = createFakeStudentBasicInfoDto();
         StudentEntity studentEntity = new StudentEntity();
 
         when(studentRepository.findById(anyLong())).thenReturn(Optional.of(studentEntity));
-        when(teacherRepository.findByIdAndRemovedFalse(any())).thenReturn(Optional.of(teacherEntity));
+        when(teacherRepository.findByIdAndDeletedFalse(any())).thenReturn(Optional.of(teacherEntity));
         when(teacherEntity.getLanguages()).thenReturn(Collections.emptyList());
 
         // When - Then
-        assertThrows(BadLanguageException.class, () -> studentService.updateEntireStudent(studentId, studentBasicInfoDto));
+        assertThrows(BadLanguageException.class, () -> studentService.updateEntireStudent(studentId, studentShortDto));
     }
 
     @Test
@@ -243,23 +244,22 @@ public class StudentServiceTest {
         StudentEntity studentEntity = new StudentEntity()
                 .setId(id)
                 .setLanguage("java")
-                .setTeacherEntity(teacherEntity);
+                .setTeacher(teacherEntity);
 
-        StudentBasicInfoDto studentBasicInfoDto = new StudentBasicInfoDto()
-                .setId(id)
+        StudentShortDto studentShortDto = new StudentShortDto()
                 .setTeacherId(teacherId)
                 .setLanguage("java");
 
         when(studentRepository.findById(id)).thenReturn(Optional.of(studentEntity));
-        when(teacherRepository.findByIdAndRemovedFalse(teacherId)).thenReturn(Optional.of(teacherEntity));
+        when(teacherRepository.findByIdAndDeletedFalse(teacherId)).thenReturn(Optional.of(teacherEntity));
         when(studentRepository.save(studentEntity)).thenReturn(studentEntity);
-        when(studentMapper.fromEntityToBasicInfoDto(studentEntity)).thenReturn(studentBasicInfoDto);
+        when(studentMapper.toShortDto(studentEntity)).thenReturn(studentShortDto);
 
         // When
-        StudentBasicInfoDto result = studentService.updateStudentTeacher(id, teacherId);
+        StudentShortDto result = studentService.updateStudentTeacher(id, teacherId);
 
         // Then
-        assertEquals(studentBasicInfoDto, result);
+        assertEquals(studentShortDto, result);
     }
 
     @Test
@@ -280,7 +280,7 @@ public class StudentServiceTest {
         Long teacherId = faker.number().randomNumber();
         StudentEntity studentEntity = new StudentEntity();
         when(studentRepository.findById(anyLong())).thenReturn(Optional.of(studentEntity));
-        when(teacherRepository.findByIdAndRemovedFalse(anyLong())).thenReturn(Optional.empty());
+        when(teacherRepository.findByIdAndDeletedFalse(anyLong())).thenReturn(Optional.empty());
 
         // When - Then
         assertThrows(LackOfTeacherException.class, () -> studentService.updateStudentTeacher(studentId, teacherId));
@@ -298,7 +298,7 @@ public class StudentServiceTest {
                 .setLanguages(Collections.singletonList("python"));
 
         when(studentRepository.findById(anyLong())).thenReturn(Optional.of(studentEntity));
-        when(teacherRepository.findByIdAndRemovedFalse(anyLong())).thenReturn(Optional.of(teacherEntity));
+        when(teacherRepository.findByIdAndDeletedFalse(anyLong())).thenReturn(Optional.of(teacherEntity));
 
         // When - Then
         assertThrows(BadLanguageException.class, () -> studentService.updateStudentTeacher(studentId, teacherId));
@@ -308,7 +308,7 @@ public class StudentServiceTest {
     public void deleteStudentTest() {
         // Given
         Long id = faker.number().randomNumber();
-        when(lessonRepository.findByStudentEntityId(id)).thenReturn(Optional.empty());
+        when(lessonRepository.existsByStudentId(id)).thenReturn(false);
 
         // When
         studentService.deleteStudent(id);
@@ -321,16 +321,15 @@ public class StudentServiceTest {
     void deleteStudent_ThrowsLessonInFutureException() {
         // Given
         Long studentId = 1L;
-        when(lessonRepository.findByStudentEntityId(anyLong())).thenReturn(Optional.of(new LessonEntity()));
+        when(lessonRepository.existsByStudentId(anyLong())).thenReturn(true);
 
         // When - Then
         assertThrows(LessonInFutureException.class, () -> studentService.deleteStudent(studentId));
         verify(studentRepository, never()).deleteById(anyLong());
     }
 
-    private StudentBasicInfoDto createFakeStudentBasicInfoDto() {
-        return new StudentBasicInfoDto()
-                .setId(faker.random().nextLong())
+    private StudentShortDto createFakeStudentBasicInfoDto() {
+        return new StudentShortDto()
                 .setFirstName(faker.name().firstName())
                 .setLastName(faker.name().lastName())
                 .setLanguage(faker.lorem().word())

@@ -8,9 +8,6 @@ import java.util.List;
 import java.util.Objects;
 
 public class NotEmptyFieldsValidator implements ConstraintValidator<NotEmptyFields, Object> {
-    @Override
-    public void initialize(NotEmptyFields constraintAnnotation) {
-    }
 
     @Override
     public boolean isValid(Object value, ConstraintValidatorContext context) {

@@ -2,19 +2,18 @@ package pl.szlify.codingapi.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.szlify.codingapi.exceptions.LessonInFutureException;
-import pl.szlify.codingapi.model.LessonEntity;
 import pl.szlify.codingapi.model.TeacherEntity;
 import pl.szlify.codingapi.exceptions.LackOfTeacherException;
 import pl.szlify.codingapi.mapper.TeacherMapper;
-import pl.szlify.codingapi.model.TeacherDto;
-import pl.szlify.codingapi.model.TeacherBasicInfoDto;
+import pl.szlify.codingapi.model.dto.TeacherFullDto;
+import pl.szlify.codingapi.model.dto.TeacherShortDto;
 import pl.szlify.codingapi.repository.LessonRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,32 +23,33 @@ public class TeacherService {
     private final LessonRepository lessonRepository;
     private final TeacherMapper teacherMapper;
 
-    public List<TeacherBasicInfoDto> getTeachersList() {
+    public List<TeacherShortDto> getTeachersList() {
         return teacherRepository.findAll().stream()
-                .map(teacherMapper::fromEntityToNajwInfoDto)
+                .map(teacherMapper::toShortDto)
                 .collect(Collectors.toList());
     }
 
-    public TeacherDto getTeacher(Long id) {
+    public TeacherFullDto getTeacher(Long id) {
         TeacherEntity teacherEntity = teacherRepository.findById(id)
                 .orElseThrow(LackOfTeacherException::new);
-        return teacherMapper.fromEntityToDto(teacherEntity);
+        return teacherMapper.toFullDto(teacherEntity);
     }
 
-    public TeacherDto addTeacher(TeacherBasicInfoDto teacherBasicInfoDto) {
-        TeacherEntity teacherEntity = teacherMapper.fromNajwInfoToEntity(teacherBasicInfoDto);
-        return teacherMapper.fromEntityToDto(teacherRepository.save(teacherEntity));
+    public TeacherFullDto addTeacher(TeacherShortDto teacherShortDto) {
+        TeacherEntity teacherEntity = teacherMapper.toEntity(teacherShortDto);
+        return teacherMapper.toFullDto(teacherRepository.save(teacherEntity));
     }
 
-    public TeacherBasicInfoDto updateEntireTeacher(Long id, TeacherBasicInfoDto teacherBasicInfoDto) {
+    @Transactional
+    public TeacherShortDto updateEntireTeacher(Long id, TeacherShortDto teacherShortDto) {
         TeacherEntity teacherEntity = teacherRepository.findById(id)
                 .orElseThrow(LackOfTeacherException::new);
         TeacherEntity updatedTeacherEntity = teacherMapper
-                .fromNajwInfoAndEntityToEntity(teacherEntity, teacherBasicInfoDto);
-        return teacherMapper.fromEntityToNajwInfoDto(teacherRepository.save(updatedTeacherEntity));
+                .toEntityUpdate(teacherEntity, teacherShortDto);
+        return teacherMapper.toShortDto(teacherRepository.save(updatedTeacherEntity));
     }
 
-    public TeacherBasicInfoDto updateTeacherLanguagesList(Long id, List<String> languagesList) {
+    public TeacherShortDto updateTeacherLanguagesList(Long id, List<String> languagesList) {
         TeacherEntity teacherEntity = teacherRepository.findById(id)
                 .orElseThrow(LackOfTeacherException::new);
         List<String> newLanguages = languagesList.stream()
@@ -59,17 +59,17 @@ public class TeacherService {
         List<String> updatedLanguages = new ArrayList<>(teacherEntity.getLanguages());
         updatedLanguages.addAll(newLanguages);
         teacherEntity.setLanguages(updatedLanguages);
-        return teacherMapper.fromEntityToNajwInfoDto(teacherRepository.save(teacherEntity));
+        return teacherMapper.toShortDto(teacherRepository.save(teacherEntity));
     }
 
     public void deleteTeacher(Long id) {
         TeacherEntity teacher = teacherRepository.findById(id)
                 .orElseThrow(LackOfTeacherException::new);
-        Optional<LessonEntity> existingLesson = lessonRepository.findByTeacherEntityId(id);
-        if (existingLesson.isPresent()) {
+        boolean existsDate = lessonRepository.existsByTeacherId(id);
+        if (existsDate) {
             throw new LessonInFutureException();
         }
-        teacher.setRemoved(true);
+        teacher.setDeleted(true);
         teacherRepository.save(teacher);
     }
 }

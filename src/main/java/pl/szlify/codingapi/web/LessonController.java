@@ -5,9 +5,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.szlify.codingapi.model.LessonDateDto;
+import pl.szlify.codingapi.model.dto.LessonDateDto;
 import pl.szlify.codingapi.service.LessonService;
-import pl.szlify.codingapi.model.LessonDto;
+import pl.szlify.codingapi.model.dto.LessonDto;
 
 import java.util.List;
 

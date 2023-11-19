@@ -8,9 +8,6 @@ import pl.szlify.codingapi.exceptions.LessonInPastException;
 import java.time.LocalDateTime;
 
 public class NotDateInPastValidator implements ConstraintValidator<NotDateInPast, Object> {
-    @Override
-    public void initialize(NotDateInPast constraintAnnotation) {
-    }
 
     @Override
     public boolean isValid(Object value, ConstraintValidatorContext context) {
