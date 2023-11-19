@@ -1,14 +1,14 @@
 package pl.szlify.codingapi.web;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.szlify.codingapi.model.dto.LessonDateDto;
 import pl.szlify.codingapi.service.LessonService;
-import pl.szlify.codingapi.model.LessonDto;
+import pl.szlify.codingapi.model.dto.LessonDto;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -28,18 +28,18 @@ public class LessonController {
     }
 
     @PostMapping
-    public LessonDto addLesson(@RequestBody LessonDto lessonDto) {
+    public LessonDto addLesson(@Valid @RequestBody LessonDto lessonDto) {
         return lessonService.addLesson(lessonDto);
     }
 
     @PutMapping("/{id}")
-    public LessonDto updateEntireLesson(@PathVariable Long id, @RequestBody LessonDto lessonDto) {
+    public LessonDto updateEntireLesson(@PathVariable Long id, @Valid @RequestBody LessonDto lessonDto) {
         return lessonService.updateEntireLesson(id, lessonDto);
     }
 
     @PatchMapping("/{id}")
-    public LessonDto updateLessonDate(@PathVariable Long id, @RequestBody @NotNull(message = "Date and time must not be null") LocalDateTime localDateTime) {
-        return lessonService.updateLessonDate(id, localDateTime);
+    public LessonDto updateLessonDate(@PathVariable Long id, @Valid @RequestBody LessonDateDto lessonDateDto) {
+        return lessonService.updateLessonDate(id, lessonDateDto.getDate());
     }
 
     @DeleteMapping("/{id}")

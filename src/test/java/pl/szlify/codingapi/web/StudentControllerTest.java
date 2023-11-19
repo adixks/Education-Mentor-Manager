@@ -7,8 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import pl.szlify.codingapi.model.StudentDto;
-import pl.szlify.codingapi.model.StudentBasicInfoDto;
+import pl.szlify.codingapi.model.dto.StudentFullDto;
+import pl.szlify.codingapi.model.dto.StudentShortDto;
 import pl.szlify.codingapi.service.StudentService;
 
 import java.util.Arrays;
@@ -29,11 +29,11 @@ class StudentControllerTest {
     @Test
     void getStudentsList_shouldReturnListOfStudentBasicInfoDto() {
         // Given
-        List<StudentBasicInfoDto> studentsList = Arrays.asList(new StudentBasicInfoDto(), new StudentBasicInfoDto());
+        List<StudentShortDto> studentsList = Arrays.asList(new StudentShortDto(), new StudentShortDto());
         when(studentService.getStudentsList()).thenReturn(studentsList);
 
         // When
-        List<StudentBasicInfoDto> result = studentController.getStudentsList();
+        List<StudentShortDto> result = studentController.getStudentsList();
 
         // Then
         assertEquals(studentsList, result);
@@ -43,42 +43,42 @@ class StudentControllerTest {
     void getStudent_shouldReturnListOfStudentDto() {
         // Given
         Long studentId = 1L;
-        StudentDto studentDto = new StudentDto();
-        when(studentService.getStudent(studentId)).thenReturn(studentDto);
+        StudentFullDto studentFullDto = new StudentFullDto();
+        when(studentService.getStudent(studentId)).thenReturn(studentFullDto);
 
         // When
-        StudentDto result = studentController.getStudent(studentId);
+        StudentFullDto result = studentController.getStudent(studentId);
 
         // Then
-        assertEquals(studentDto, result);
+        assertEquals(studentFullDto, result);
     }
 
     @Test
     void addStudent_shouldReturnStudentBasicInfoDto() {
         // Given
-        StudentBasicInfoDto studentBasicInfoDto = new StudentBasicInfoDto();
-        when(studentService.addStudent(studentBasicInfoDto)).thenReturn(studentBasicInfoDto);
+        StudentShortDto studentShortDto = new StudentShortDto();
+        when(studentService.addStudent(studentShortDto)).thenReturn(studentShortDto);
 
         // When
-        StudentBasicInfoDto result = studentController.addStudent(studentBasicInfoDto);
+        StudentShortDto result = studentController.addStudent(studentShortDto);
 
         // Then
-        assertEquals(studentBasicInfoDto, result);
+        assertEquals(studentShortDto, result);
     }
 
     @Test
     void updateEntireStudent_shouldReturnStudentDto() {
         // Given
         Long studentId = 1L;
-        StudentBasicInfoDto studentBasicInfoDto = new StudentBasicInfoDto();
-        StudentDto studentDto = new StudentDto();
-        when(studentService.updateEntireStudent(studentId, studentBasicInfoDto)).thenReturn(studentDto);
+        StudentShortDto studentShortDto = new StudentShortDto();
+        StudentFullDto studentFullDto = new StudentFullDto();
+        when(studentService.updateEntireStudent(studentId, studentShortDto)).thenReturn(studentFullDto);
 
         // When
-        StudentDto result = studentController.updateEntireStudent(studentId, studentBasicInfoDto);
+        StudentFullDto result = studentController.updateEntireStudent(studentId, studentShortDto);
 
         // Then
-        assertEquals(studentDto, result);
+        assertEquals(studentFullDto, result);
     }
 
     @Test
@@ -86,14 +86,14 @@ class StudentControllerTest {
         // Given
         Long studentId = 1L;
         Long newTeacherId = 2L;
-        StudentBasicInfoDto studentBasicInfoDto = new StudentBasicInfoDto();
-        when(studentService.updateStudentTeacher(studentId, newTeacherId)).thenReturn(studentBasicInfoDto);
+        StudentShortDto studentShortDto = new StudentShortDto();
+        when(studentService.updateStudentTeacher(studentId, newTeacherId)).thenReturn(studentShortDto);
 
         // When
-        StudentBasicInfoDto result = studentController.updateStudentTeacher(studentId, newTeacherId);
+        StudentShortDto result = studentController.updateStudentTeacher(studentId, newTeacherId);
 
         // Then
-        assertEquals(studentBasicInfoDto, result);
+        assertEquals(studentShortDto, result);
     }
 
     @Test

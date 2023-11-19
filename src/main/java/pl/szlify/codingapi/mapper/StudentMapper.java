@@ -2,66 +2,59 @@ package pl.szlify.codingapi.mapper;
 
 import org.springframework.stereotype.Component;
 import pl.szlify.codingapi.model.*;
+import pl.szlify.codingapi.model.dto.StudentShortDto;
+import pl.szlify.codingapi.model.dto.StudentFullDto;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class StudentMapper {
 
-    public StudentDto fromEntityToDto(StudentEntity entity) {
-        return new StudentDto()
+    public StudentFullDto toFullDto(StudentEntity entity) {
+        Set<Long> lessonIds = new HashSet<>();
+
+        if (entity.getLessons() != null) {
+            lessonIds = entity.getLessons().stream()
+                    .map(LessonEntity::getId)
+                    .collect(Collectors.toSet());
+        }
+
+        return new StudentFullDto()
                 .setId(entity.getId())
                 .setFirstName(entity.getFirstName())
                 .setLastName(entity.getLastName())
                 .setLanguage(entity.getLanguage())
-                .setRemoved(entity.getRemoved())
-                .setTeacherId(entity.getTeacherEntity().getId());
+                .setRemoved(entity.getDeleted())
+                .setTeacherId(entity.getTeacher().getId())
+                .setLessonIds(lessonIds);
     }
 
-    public StudentEntity fromDtoToEntity(StudentDto model) {
-        return new StudentEntity()
-                .setId(model.getId())
-                .setFirstName(model.getFirstName())
-                .setLastName(model.getLastName())
-                .setLanguage(model.getLanguage())
-                .setRemoved(model.getRemoved());
-        // MAP THE TEACHER
-    }
-
-    public StudentEntity fromDtoAndEntityToEntity(StudentEntity studentEntity, StudentDto studentDto) {
-        return new StudentEntity()
-                .setId(studentEntity.getId())
-                .setFirstName(studentDto.getFirstName())
-                .setLastName(studentDto.getLastName())
-                .setLanguage(studentDto.getLanguage())
-                .setRemoved(studentDto.getRemoved());
-        // MAP THE TEACHER
-    }
-
-    public StudentBasicInfoDto fromEntityToBasicInfoDto(StudentEntity entity) {
-        return new StudentBasicInfoDto()
-                .setId(entity.getId())
+    public StudentShortDto toShortDto(StudentEntity entity) {
+        return new StudentShortDto()
                 .setFirstName(entity.getFirstName())
                 .setLastName(entity.getLastName())
                 .setLanguage(entity.getLanguage())
-                .setTeacherId(entity.getTeacherEntity().getId());
+                .setTeacherId(entity.getTeacher().getId());
     }
 
-    public StudentEntity fromBasicInfoDtoToEntity(StudentBasicInfoDto studentBasicInfoDto) {
+    public StudentEntity toEntity(StudentShortDto studentShortDto) {
         return new StudentEntity()
-                .setId(studentBasicInfoDto.getId())
-                .setFirstName(studentBasicInfoDto.getFirstName())
-                .setLastName(studentBasicInfoDto.getLastName())
-                .setLanguage(studentBasicInfoDto.getLanguage())
-                .setRemoved(false);
+                .setFirstName(studentShortDto.getFirstName())
+                .setLastName(studentShortDto.getLastName())
+                .setLanguage(studentShortDto.getLanguage())
+                .setDeleted(false);
         // MAP THE TEACHER
     }
 
-    public StudentEntity fromBasicInfoAndEntityToEntity(StudentEntity studentEntity, StudentBasicInfoDto studentBasicInfoDto) {
+    public StudentEntity toEntityUpdate(StudentEntity studentEntity, StudentShortDto studentShortDto) {
         return new StudentEntity()
                 .setId(studentEntity.getId())
-                .setFirstName(studentBasicInfoDto.getFirstName())
-                .setLastName(studentBasicInfoDto.getLastName())
-                .setRemoved(false)
-                .setLanguage(studentBasicInfoDto.getLanguage());
+                .setFirstName(studentShortDto.getFirstName())
+                .setLastName(studentShortDto.getLastName())
+                .setDeleted(false)
+                .setLanguage(studentShortDto.getLanguage());
         // MAP THE TEACHER
     }
 }

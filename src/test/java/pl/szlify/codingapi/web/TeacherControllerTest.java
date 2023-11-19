@@ -7,8 +7,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import pl.szlify.codingapi.model.TeacherDto;
-import pl.szlify.codingapi.model.TeacherBasicInfoDto;
+import pl.szlify.codingapi.model.dto.TeacherFullDto;
+import pl.szlify.codingapi.model.dto.TeacherShortDto;
+import pl.szlify.codingapi.model.dto.TeacherLanguagesDto;
 import pl.szlify.codingapi.service.TeacherService;
 
 import java.util.Arrays;
@@ -29,10 +30,10 @@ class TeacherControllerTest {
     @Test
     void getTeachersList_shouldReturnListOfTeacherBasicInfoDto() {
         // Given
-        when(teacherService.getTeachersList()).thenReturn(Arrays.asList(new TeacherBasicInfoDto(), new TeacherBasicInfoDto()));
+        when(teacherService.getTeachersList()).thenReturn(Arrays.asList(new TeacherShortDto(), new TeacherShortDto()));
 
         // When
-        List<TeacherBasicInfoDto> result = teacherController.getTeachersList();
+        List<TeacherShortDto> result = teacherController.getTeachersList();
 
         // Then
         assertEquals(2, result.size());
@@ -43,27 +44,27 @@ class TeacherControllerTest {
     void getTeacher_shouldReturnStudentDto() {
         // Given
         Long id = 1L;
-        when(teacherService.getTeacher(id)).thenReturn(new TeacherDto());
+        when(teacherService.getTeacher(id)).thenReturn(new TeacherFullDto());
 
         // When
-        TeacherDto result = teacherController.getTeacher(id);
+        TeacherFullDto result = teacherController.getTeacher(id);
 
         // Then
-        assertEquals(TeacherDto.class, result.getClass());
+        assertEquals(TeacherFullDto.class, result.getClass());
         verify(teacherService, times(1)).getTeacher(id);
     }
 
     @Test
     void addTeacher_shouldReturnTeacherDto() {
         // Given
-        TeacherBasicInfoDto teacherDto = new TeacherBasicInfoDto();
-        when(teacherService.addTeacher(teacherDto)).thenReturn(new TeacherDto());
+        TeacherShortDto teacherDto = new TeacherShortDto();
+        when(teacherService.addTeacher(teacherDto)).thenReturn(new TeacherFullDto());
 
         // When
-        TeacherDto result = teacherController.addTeacher(teacherDto);
+        TeacherFullDto result = teacherController.addTeacher(teacherDto);
 
         // Then
-        assertEquals(TeacherDto.class, result.getClass());
+        assertEquals(TeacherFullDto.class, result.getClass());
         verify(teacherService, times(1)).addTeacher(teacherDto);
     }
 
@@ -71,14 +72,14 @@ class TeacherControllerTest {
     void updateEntireTeacher_() {
         // Given
         Long id = 1L;
-        TeacherBasicInfoDto teacherDto = new TeacherBasicInfoDto();
+        TeacherShortDto teacherDto = new TeacherShortDto();
         when(teacherService.updateEntireTeacher(id, teacherDto)).thenReturn(teacherDto);
 
         // When
-        TeacherBasicInfoDto result = teacherController.updateEntireTeacher(id, teacherDto);
+        TeacherShortDto result = teacherController.updateEntireTeacher(id, teacherDto);
 
         // Then
-        assertEquals(TeacherBasicInfoDto.class, result.getClass());
+        assertEquals(TeacherShortDto.class, result.getClass());
         verify(teacherService, times(1)).updateEntireTeacher(id, teacherDto);
     }
 
@@ -86,16 +87,16 @@ class TeacherControllerTest {
     void updateTeacherLanguagesList_shouldReturnTeacherBasicInfoDto() {
         // Given
         Long id = 1L;
-        List<String> languagesList = Arrays.asList("jezyk1", "jezyk2");
-        TeacherBasicInfoDto teacherDto = new TeacherBasicInfoDto();
-        when(teacherService.updateTeacherLanguagesList(id, languagesList)).thenReturn(teacherDto);
+        TeacherLanguagesDto languagesList = new TeacherLanguagesDto().setLanguagesList(Arrays.asList("jezyk1", "jezyk2"));
+        TeacherShortDto teacherDto = new TeacherShortDto();
+        when(teacherService.updateTeacherLanguagesList(id, languagesList.getLanguagesList())).thenReturn(teacherDto);
 
         // When
-        TeacherBasicInfoDto result = teacherController.updateTeacherLanguagesList(id, languagesList);
+        TeacherShortDto result = teacherController.updateTeacherLanguagesList(id, languagesList);
 
         // Then
-        assertEquals(TeacherBasicInfoDto.class, result.getClass());
-        verify(teacherService, times(1)).updateTeacherLanguagesList(id, languagesList);
+        assertEquals(TeacherShortDto.class, result.getClass());
+        verify(teacherService, times(1)).updateTeacherLanguagesList(id, languagesList.getLanguagesList());
     }
 
     @Test

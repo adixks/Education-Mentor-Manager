@@ -1,68 +1,58 @@
 package pl.szlify.codingapi.mapper;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
+import pl.szlify.codingapi.model.LessonEntity;
 import pl.szlify.codingapi.model.StudentEntity;
 import pl.szlify.codingapi.model.TeacherEntity;
-import pl.szlify.codingapi.model.TeacherDto;
-import pl.szlify.codingapi.model.TeacherBasicInfoDto;
+import pl.szlify.codingapi.model.dto.TeacherFullDto;
+import pl.szlify.codingapi.model.dto.TeacherShortDto;
 
 @Component
 public class TeacherMapper {
 
-    public TeacherDto fromEntityToDto(TeacherEntity entity) {
-        TeacherDto model = new TeacherDto();
-        model.setId(entity.getId());
-        model.setFirstName(entity.getFirstName());
-        model.setLastName(entity.getLastName());
-        model.setRemoved(entity.getRemoved());
-        model.setLanguages(entity.getLanguages());
+    public TeacherFullDto toFullDto(TeacherEntity entity) {
+        TeacherFullDto model = new TeacherFullDto()
+                .setId(entity.getId())
+                .setFirstName(entity.getFirstName())
+                .setLastName(entity.getLastName())
+                .setRemoved(entity.getDeleted())
+                .setLanguages(entity.getLanguages());
 
-        if (entity.getStudentsList() == null) {
-            model.setStudentsList(new ArrayList<>());
-        } else {
-            model.setStudentsList(entity.getStudentsList().stream().map(StudentEntity::getId).collect(Collectors.toList()));
+        if (entity.getStudentsList() != null) {
+            model.setStudentsListIds(entity.getStudentsList().stream().map(StudentEntity::getId).collect(Collectors.toSet()));
         }
+
+        if (entity.getLessons() != null) {
+            model.setLessonIds(entity.getLessons().stream().map(LessonEntity::getId).collect(Collectors.toSet()));
+        }
+
         return model;
     }
 
-    public TeacherEntity fromDtoToEntity(TeacherDto model) {
-        return new TeacherEntity()
-                .setId(model.getId())
-                .setFirstName(model.getFirstName())
-                .setLastName(model.getLastName())
-                .setRemoved(model.getRemoved())
-                .setLanguages(model.getLanguages());
-        // MAP COURSE LIST
-    }
-
-    public TeacherBasicInfoDto fromEntityToNajwInfoDto(TeacherEntity entity) {
-        return new TeacherBasicInfoDto()
-                .setId(entity.getId())
+    public TeacherShortDto toShortDto(TeacherEntity entity) {
+        return new TeacherShortDto()
                 .setFirstName(entity.getFirstName())
                 .setLastName(entity.getLastName())
                 .setLanguages(entity.getLanguages());
     }
 
-    public TeacherEntity fromNajwInfoToEntity(TeacherBasicInfoDto teacherBasicInfoDto) {
+    public TeacherEntity toEntity(TeacherShortDto teacherShortDto) {
         return new TeacherEntity()
-                .setId(teacherBasicInfoDto.getId())
-                .setFirstName(teacherBasicInfoDto.getFirstName())
-                .setLastName(teacherBasicInfoDto.getLastName())
-                .setRemoved(false)
-                .setStudentsList(new ArrayList<>())
-                .setLanguages(teacherBasicInfoDto.getLanguages());
+                .setFirstName(teacherShortDto.getFirstName())
+                .setLastName(teacherShortDto.getLastName())
+                .setDeleted(false)
+                .setStudentsList(new HashSet<>())
+                .setLanguages(teacherShortDto.getLanguages())
+                .setLessons(new HashSet<>());
     }
 
-    public TeacherEntity fromNajwInfoAndEntityToEntity(TeacherEntity teacherEntity, TeacherBasicInfoDto teacherBasicInfoDto) {
-        return new TeacherEntity()
-                .setId(teacherEntity.getId())
-                .setFirstName(teacherBasicInfoDto.getFirstName())
-                .setLastName(teacherBasicInfoDto.getLastName())
-                .setRemoved(false)
-                .setLanguages(teacherBasicInfoDto.getLanguages())
-                .setStudentsList(new ArrayList<>());
+    public TeacherEntity toEntityUpdate(TeacherEntity teacherEntity, TeacherShortDto teacherShortDto) {
+        teacherEntity.setFirstName(teacherShortDto.getFirstName());
+        teacherEntity.setLastName(teacherShortDto.getLastName());
+        teacherEntity.setLanguages(teacherShortDto.getLanguages());
+        return teacherEntity;
     }
 }

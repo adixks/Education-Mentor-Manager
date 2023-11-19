@@ -1,29 +1,36 @@
 package pl.szlify.codingapi.service;
 
+import java.util.*;
+
+import com.github.javafaker.Faker;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import pl.szlify.codingapi.model.TeacherEntity;
-import pl.szlify.codingapi.exceptions.LackofTeacherException;
+import pl.szlify.codingapi.exceptions.LackOfTeacherException;
+import pl.szlify.codingapi.exceptions.LessonInFutureException;
 import pl.szlify.codingapi.mapper.TeacherMapper;
-import pl.szlify.codingapi.model.TeacherDto;
-import pl.szlify.codingapi.model.TeacherBasicInfoDto;
+import pl.szlify.codingapi.model.LessonEntity;
+import pl.szlify.codingapi.model.dto.TeacherShortDto;
+import pl.szlify.codingapi.model.dto.TeacherFullDto;
+import pl.szlify.codingapi.model.TeacherEntity;
+import pl.szlify.codingapi.repository.LessonRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TeacherServiceTest {
+public class TeacherServiceTest {
 
     @Mock
     private TeacherRepository teacherRepository;
+
+    @Mock
+    private LessonRepository lessonRepository;
 
     @Mock
     private TeacherMapper teacherMapper;
@@ -31,131 +38,211 @@ class TeacherServiceTest {
     @InjectMocks
     private TeacherService teacherService;
 
-    @Test
-    void getTeachersList_shouldReturnListOfTeacherBasicInfoDto() {
-        // Given
-        TeacherEntity teacherOne = new TeacherEntity();
-        TeacherEntity teacherTwo = new TeacherEntity();
-        List<TeacherEntity> teachers = Arrays.asList(teacherOne, teacherTwo);
+    private Faker faker;
 
-        TeacherBasicInfoDto teacherBasicInfoOne = new TeacherBasicInfoDto();
-        TeacherBasicInfoDto teacherBasicInfoTwo = new TeacherBasicInfoDto();
-        List<TeacherBasicInfoDto> teachersBasicInfoList = Arrays.asList(teacherBasicInfoOne, teacherBasicInfoTwo);
-        when(teacherRepository.findAll()).thenReturn(teachers);
-        when(teacherMapper.fromEntityToNajwInfoDto(teacherOne)).thenReturn(teacherBasicInfoOne);
-        when(teacherMapper.fromEntityToNajwInfoDto(teacherTwo)).thenReturn(teacherBasicInfoTwo);
-
-        // When
-        List<TeacherBasicInfoDto> result = teacherService.getTeachersList();
-
-        // Then
-        assertEquals(teachersBasicInfoList, result);
-        verify(teacherRepository, times(1)).findAll();
-        verify(teacherMapper, times(1)).fromEntityToNajwInfoDto(teacherOne);
-        verify(teacherMapper, times(1)).fromEntityToNajwInfoDto(teacherTwo);
+    @BeforeEach
+    public void setup() {
+        faker = new Faker();
     }
 
     @Test
-    void getTeacher_shouldReturnTeacherBasicInfoDto() {
+    public void getTeachersListTest() {
         // Given
-        Long id = 1L;
-        TeacherEntity teacherEntity = new TeacherEntity();
-        TeacherDto teacherDto = new TeacherDto();
+        TeacherEntity teacherEntity = createMockTeacherEntity();
+        TeacherShortDto teacherShortDto = createMockTeacherBasicInfoDto(teacherEntity);
+
+        when(teacherRepository.findAll()).thenReturn(Collections.singletonList(teacherEntity));
+        when(teacherMapper.toShortDto(teacherEntity)).thenReturn(teacherShortDto);
+
+        // When
+        List<TeacherShortDto> result = teacherService.getTeachersList();
+
+        // Then
+        assertEquals(1, result.size());
+        assertEquals(teacherShortDto, result.get(0));
+    }
+
+    @Test
+    public void getTeacherTest() {
+        // Given
+        Long id = faker.number().randomNumber();
+        TeacherEntity teacherEntity = createMockTeacherEntity()
+                .setId(id)
+                .setFirstName(faker.name().fullName());
+
+        TeacherFullDto teacherFullDto = new TeacherFullDto()
+                .setId(teacherEntity.getId())
+                .setFirstName(teacherEntity.getFirstName());
+
         when(teacherRepository.findById(id)).thenReturn(Optional.of(teacherEntity));
-        when(teacherMapper.fromEntityToDto(teacherEntity)).thenReturn(teacherDto);
+        when(teacherMapper.toFullDto(teacherEntity)).thenReturn(teacherFullDto);
 
         // When
-        TeacherDto result = teacherService.getTeacher(id);
+        TeacherFullDto result = teacherService.getTeacher(id);
 
         // Then
-        assertNotNull(result);
-        assertEquals(teacherDto, result);
-        verify(teacherRepository, times(1)).findById(id);
+        assertEquals(teacherFullDto, result);
     }
 
     @Test
-    void addTeacher_shouldReturnLackofTeacherException() {
+    void getTeacher_shouldThrowsLackOfTeacherException() {
         // Given
-        Long id = 1L;
-        when(teacherRepository.findById(id)).thenReturn(Optional.empty());
+        Long teacherId = 1L;
+        when(teacherRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        // When
-        assertThrows(LackofTeacherException.class, () -> teacherService.getTeacher(id));
-
-        // Then
-        verify(teacherRepository, times(1)).findById(id);
+        // When - Then
+        assertThrows(LackOfTeacherException.class, () -> teacherService.getTeacher(teacherId));
     }
 
     @Test
-    void updateEntireTeacher_shouldReturnTeacherBasicInfoDto() {
+    public void addTeacherTest() {
         // Given
-        Long nauczycielId = 1L;
-        TeacherBasicInfoDto teacherBasicInfoDto = new TeacherBasicInfoDto();
-        TeacherEntity teacherEntity = new TeacherEntity();
-        TeacherEntity updatedTeacherEntity = new TeacherEntity();
-        when(teacherRepository.findById(nauczycielId)).thenReturn(Optional.of(teacherEntity));
-        when(teacherRepository.save(any(TeacherEntity.class))).thenReturn(updatedTeacherEntity);
-        when(teacherMapper.fromNajwInfoAndEntityToEntity(any(TeacherEntity.class), eq(teacherBasicInfoDto)))
-                .thenReturn(updatedTeacherEntity);
-        when(teacherMapper.fromEntityToNajwInfoDto(updatedTeacherEntity)).thenReturn(teacherBasicInfoDto);
+        TeacherShortDto teacherShortDto = new TeacherShortDto();
+        teacherShortDto.setFirstName(faker.name().fullName());
+
+        TeacherEntity teacherEntity = new TeacherEntity()
+                .setFirstName(teacherShortDto.getFirstName());
+
+        TeacherFullDto teacherFullDto = new TeacherFullDto()
+                .setId(teacherEntity.getId())
+                .setFirstName(teacherEntity.getFirstName());
+
+        when(teacherMapper.toEntity(teacherShortDto)).thenReturn(teacherEntity);
+        when(teacherRepository.save(teacherEntity)).thenReturn(teacherEntity);
+        when(teacherMapper.toFullDto(teacherEntity)).thenReturn(teacherFullDto);
 
         // When
-        TeacherBasicInfoDto result = teacherService.updateEntireTeacher(nauczycielId, teacherBasicInfoDto);
+        TeacherFullDto result = teacherService.addTeacher(teacherShortDto);
 
         // Then
-        assertEquals(teacherBasicInfoDto, result);
-        verify(teacherRepository, times(1)).findById(nauczycielId);
-        verify(teacherRepository, times(1)).save(updatedTeacherEntity);
-        verify(teacherMapper, times(1)).fromNajwInfoAndEntityToEntity(teacherEntity, teacherBasicInfoDto);
-        verify(teacherMapper, times(1)).fromEntityToNajwInfoDto(updatedTeacherEntity);
+        assertEquals(teacherFullDto, result);
     }
 
     @Test
-    void updateTeacherLanguagesList_shouldReturnLackofTeacherException() {
+    public void updateEntireTeacherTest() {
         // Given
-        Long id = 1L;
-        List<String> listaJezykow = Arrays.asList("java", "C");
-        when(teacherRepository.findById(id)).thenReturn(Optional.empty());
+        Long id = faker.number().randomNumber();
+        TeacherShortDto teacherShortDto = new TeacherShortDto()
+                .setFirstName(faker.name().fullName());
 
-        // When
-        assertThrows(LackofTeacherException.class, () -> teacherService.updateTeacherLanguagesList(id, listaJezykow));
+        TeacherEntity teacherEntity = new TeacherEntity()
+                .setId(id)
+                .setFirstName(faker.name().fullName());
 
-        // Then
-        verify(teacherRepository, times(1)).findById(id);
-        verify(teacherRepository, never()).save(any(TeacherEntity.class));
-        verify(teacherMapper, never()).fromEntityToDto(any(TeacherEntity.class));
-    }
+        TeacherEntity updatedTeacherEntity = new TeacherEntity()
+                .setId(id)
+                .setFirstName(faker.name().fullName());
 
-    @Test
-    void deleteTeacher_shouldReturn200() {
-        // Given
-        Long id = 1L;
-        TeacherEntity teacherEntity = new TeacherEntity();
-        teacherEntity.setId(id);
-        teacherEntity.setRemoved(false);
         when(teacherRepository.findById(id)).thenReturn(Optional.of(teacherEntity));
-        when(teacherRepository.save(any(TeacherEntity.class))).thenReturn(teacherEntity);
+        when(teacherMapper.toEntityUpdate(teacherEntity, teacherShortDto)).thenReturn(updatedTeacherEntity);
+        when(teacherRepository.save(updatedTeacherEntity)).thenReturn(updatedTeacherEntity);
+        when(teacherMapper.toShortDto(updatedTeacherEntity)).thenReturn(teacherShortDto);
 
         // When
-        assertDoesNotThrow(() -> teacherService.deleteTeacher(id));
+        TeacherShortDto result = teacherService.updateEntireTeacher(id, teacherShortDto);
 
         // Then
-        assertTrue(teacherEntity.getRemoved());
-        verify(teacherRepository, times(1)).findById(id);
-        verify(teacherRepository, times(1)).save(teacherEntity);
+        assertEquals(teacherShortDto, result);
     }
 
     @Test
-    void deleteTeacher_shouldReturnLackofTeacherException() {
+    void updateEntireTeacher_ThrowsLackOfTeacherException() {
         // Given
-        Long id = 1L;
-        when(teacherRepository.findById(id)).thenReturn(Optional.empty());
+        Long teacherId = faker.number().randomNumber();
+        List<String> languagesList = Arrays.asList(faker.lorem().word(), faker.lorem().word());
+        TeacherShortDto teacherShortDto = new TeacherShortDto()
+                .setLanguages(languagesList);
+        when(teacherRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // When - Then
+        assertThrows(LackOfTeacherException.class, () -> teacherService.updateEntireTeacher(teacherId, teacherShortDto));
+    }
+
+    @Test
+    public void updateTeacherLanguagesListTest() {
+        // Given
+        Long id = faker.number().randomNumber();
+        List<String> languagesList = Arrays.asList(faker.lorem().word(), faker.lorem().word());
+
+        TeacherEntity teacherEntity = new TeacherEntity()
+                .setId(id)
+                .setLanguages(new ArrayList<>());
+
+        TeacherShortDto teacherShortDto = new TeacherShortDto()
+                .setLanguages(languagesList);
+
+        when(teacherRepository.findById(id)).thenReturn(Optional.of(teacherEntity));
+        when(teacherRepository.save(teacherEntity)).thenReturn(teacherEntity);
+        when(teacherMapper.toShortDto(teacherEntity)).thenReturn(teacherShortDto);
 
         // When
-        assertThrows(LackofTeacherException.class, () -> teacherService.deleteTeacher(id));
+        TeacherShortDto result = teacherService.updateTeacherLanguagesList(id, languagesList);
 
         // Then
-        verify(teacherRepository, times(1)).findById(id);
-        verify(teacherRepository, never()).save(any(TeacherEntity.class));
+        assertEquals(teacherShortDto, result);
+    }
+
+    @Test
+    void updateTeacherLanguagesList_ThrowsLackOfTeacherException() {
+        // Given
+        Long teacherId = faker.number().randomNumber();
+        List<String> languagesList = List.of("java", "python");
+        when(teacherRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // When - Then
+        assertThrows(LackOfTeacherException.class, () -> teacherService.updateTeacherLanguagesList(teacherId, languagesList));
+    }
+
+    @Test
+    public void deleteTeacherTest() {
+        // Given
+        Long id = faker.number().randomNumber();
+
+        TeacherEntity teacherEntity = new TeacherEntity()
+                .setId(id)
+                .setDeleted(false);
+
+        when(teacherRepository.findById(id)).thenReturn(Optional.of(teacherEntity));
+        when(lessonRepository.existsByTeacherId(id)).thenReturn(false);
+        when(teacherRepository.save(teacherEntity)).thenAnswer(i -> i.getArguments()[0]);
+
+        // When
+        teacherService.deleteTeacher(id);
+
+        // Then
+        assertTrue(teacherEntity.getDeleted().equals(true));
+    }
+
+    @Test
+    void deleteTeacher_ThrowsLackOfTeacherException() {
+        // Given
+        Long teacherId = faker.number().randomNumber();
+        when(teacherRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // When - Then
+        assertThrows(LackOfTeacherException.class, () -> teacherService.deleteTeacher(teacherId));
+    }
+
+    @Test
+    void deleteTeacher_ThrowsLessonInFutureException() {
+        // Given
+        Long teacherId = faker.number().randomNumber();
+        TeacherEntity teacherEntity = new TeacherEntity();
+        when(teacherRepository.findById(anyLong())).thenReturn(Optional.of(teacherEntity));
+        when(lessonRepository.existsByTeacherId(anyLong())).thenReturn(true);
+
+        // When - Then
+        assertThrows(LessonInFutureException.class, () -> teacherService.deleteTeacher(teacherId));
+    }
+
+    private TeacherEntity createMockTeacherEntity() {
+        return new TeacherEntity()
+                .setId(faker.number().randomNumber())
+                .setFirstName(faker.name().fullName());
+    }
+
+    private TeacherShortDto createMockTeacherBasicInfoDto(TeacherEntity teacherEntity) {
+        return new TeacherShortDto()
+                .setFirstName(teacherEntity.getFirstName());
     }
 }
