@@ -4,10 +4,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import pl.szlify.codingapi.model.LessonEntity;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.List;
 
 public interface LessonRepository extends JpaRepository<LessonEntity, Long> {
-    Optional<LessonEntity> findByTeacherEntityIdAndDate(Long teacherId, LocalDateTime date);
-    Optional<LessonEntity> findByTeacherEntityId(Long teacherId);
-    Optional<LessonEntity> findByStudentEntityId(Long studentId);
+    boolean existsByTeacherIdAndDateBetween(Long teacherId, LocalDateTime start, LocalDateTime end);
+    boolean existsByTeacherId(Long teacherId);
+    boolean existsByStudentId(Long studentId);
+    List<LessonEntity> findByTeacherIdAndDateBetween(Long teacherId, LocalDateTime start, LocalDateTime end);
 }

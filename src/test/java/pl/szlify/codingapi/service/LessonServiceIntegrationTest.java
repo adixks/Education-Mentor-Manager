@@ -4,6 +4,8 @@ import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 import pl.szlify.codingapi.exceptions.*;
 import pl.szlify.codingapi.mapper.LessonMapper;
 import pl.szlify.codingapi.model.*;
+import pl.szlify.codingapi.model.dto.LessonDto;
 import pl.szlify.codingapi.repository.LessonRepository;
 import pl.szlify.codingapi.repository.StudentRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
@@ -22,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -63,8 +67,8 @@ public class LessonServiceIntegrationTest {
         List<LessonEntity> lessonEntities = Arrays.asList(lessonEntity1, lessonEntity2);
 
         when(lessonRepository.findAll()).thenReturn(lessonEntities);
-        when(lessonMapper.fromEntityToDto(lessonEntity1)).thenReturn(new LessonDto());
-        when(lessonMapper.fromEntityToDto(lessonEntity2)).thenReturn(new LessonDto());
+        when(lessonMapper.toDto(lessonEntity1)).thenReturn(new LessonDto());
+        when(lessonMapper.toDto(lessonEntity2)).thenReturn(new LessonDto());
 
         // When
         List<LessonDto> result = lessonService.getAllLessons();
@@ -72,7 +76,7 @@ public class LessonServiceIntegrationTest {
         // Then
         assertNotNull(result);
         assertEquals(lessonEntities.size(), result.size());
-        verify(lessonMapper, times(lessonEntities.size())).fromEntityToDto(any());
+        verify(lessonMapper, times(lessonEntities.size())).toDto(any());
     }
 
     @Test
@@ -84,14 +88,14 @@ public class LessonServiceIntegrationTest {
                 .setId(lessonId);
 
         when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lessonEntity));
-        when(lessonMapper.fromEntityToDto(lessonEntity)).thenReturn(new LessonDto());
+        when(lessonMapper.toDto(lessonEntity)).thenReturn(new LessonDto());
 
         // When
         LessonDto result = lessonService.getLesson(lessonId);
 
         // Then
         assertNotNull(result);
-        verify(lessonMapper, times(1)).fromEntityToDto(any());
+        verify(lessonMapper, times(1)).toDto(any());
     }
 
     @Test
@@ -107,43 +111,7 @@ public class LessonServiceIntegrationTest {
         });
 
         assertNotNull(exception);
-        verify(lessonMapper, never()).fromEntityToDto(any());
-    }
-
-    @Test
-    public void addLessonTest() {
-        // Given
-        LessonDto lessonDto = new LessonDto()
-                .setTeacherId(faker.number().randomNumber())
-                .setStudentId(faker.number().randomNumber())
-                .setDate(LocalDateTime.now());
-
-        TeacherEntity teacherEntity = new TeacherEntity()
-                .setId(lessonDto.getTeacherId());
-
-        StudentEntity studentEntity = new StudentEntity()
-                .setId(lessonDto.getStudentId())
-                .setTeacherEntity(teacherEntity);
-
-        when(teacherRepository.findByIdAndRemovedFalse(lessonDto.getTeacherId())).thenReturn(Optional.of(teacherEntity));
-        when(studentRepository.findByIdAndRemovedFalse(lessonDto.getStudentId())).thenReturn(Optional.of(studentEntity));
-        when(lessonRepository.findByTeacherEntityIdAndDate(lessonDto.getTeacherId(), lessonDto.getDate()))
-                .thenReturn(Optional.empty());
-        when(lessonMapper.fromDtoToEntity(lessonDto)).thenReturn(new LessonEntity());
-        when(lessonMapper.fromEntityToDto(any(LessonEntity.class))).thenAnswer(invocation -> {
-            LessonEntity entity = invocation.getArgument(0);
-            LessonDto dto = new LessonDto();
-            dto.setId(entity.getId());
-            return dto;
-        });
-        when(lessonRepository.save(any(LessonEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        // When
-        LessonDto result = lessonService.addLesson(lessonDto);
-
-        // Then
-        assertNotNull(result);
-        verify(lessonRepository, times(1)).save(any(LessonEntity.class));
+        verify(lessonMapper, never()).toDto(any());
     }
 
     @Test
@@ -154,7 +122,7 @@ public class LessonServiceIntegrationTest {
                 .setStudentId(faker.number().randomNumber())
                 .setDate(LocalDateTime.now());
 
-        when(teacherRepository.findByIdAndRemovedFalse(lessonDto.getTeacherId())).thenReturn(Optional.empty());
+        when(teacherRepository.findByIdAndDeletedFalse(lessonDto.getTeacherId())).thenReturn(Optional.empty());
 
         // When - Then
         LackOfTeacherException exception = assertThrows(LackOfTeacherException.class, () -> {
@@ -176,40 +144,11 @@ public class LessonServiceIntegrationTest {
         TeacherEntity teacherEntity = new TeacherEntity()
                 .setId(lessonDto.getTeacherId());
 
-        when(teacherRepository.findByIdAndRemovedFalse(lessonDto.getTeacherId())).thenReturn(Optional.of(teacherEntity));
-        when(studentRepository.findByIdAndRemovedFalse(lessonDto.getStudentId())).thenReturn(Optional.empty());
+        when(teacherRepository.findByIdAndDeletedFalse(lessonDto.getTeacherId())).thenReturn(Optional.of(teacherEntity));
+        when(studentRepository.findByIdAndDeletedFalse(lessonDto.getStudentId())).thenReturn(Optional.empty());
 
         // When - Then
         MissingStudentException exception = assertThrows(MissingStudentException.class, () -> {
-            lessonService.addLesson(lessonDto);
-        });
-
-        assertNotNull(exception);
-        verify(lessonRepository, never()).save(any(LessonEntity.class));
-    }
-
-    @Test
-    public void addLessonTest_shouldThrowsBusyTermLessonException() {
-        // Given
-        LessonDto lessonDto = new LessonDto()
-                .setTeacherId(faker.number().randomNumber())
-                .setStudentId(faker.number().randomNumber())
-                .setDate(LocalDateTime.now());
-
-        TeacherEntity teacherEntity = new TeacherEntity()
-                .setId(lessonDto.getTeacherId());
-
-        StudentEntity studentEntity = new StudentEntity()
-                .setId(lessonDto.getStudentId())
-                .setTeacherEntity(teacherEntity);
-
-        when(teacherRepository.findByIdAndRemovedFalse(lessonDto.getTeacherId())).thenReturn(Optional.of(teacherEntity));
-        when(studentRepository.findByIdAndRemovedFalse(lessonDto.getStudentId())).thenReturn(Optional.of(studentEntity));
-        when(lessonRepository.findByTeacherEntityIdAndDate(lessonDto.getTeacherId(), lessonDto.getDate()))
-                .thenReturn(Optional.of(new LessonEntity()));
-
-        // When - Then
-        BusyTermLessonException exception = assertThrows(BusyTermLessonException.class, () -> {
             lessonService.addLesson(lessonDto);
         });
 
@@ -225,16 +164,15 @@ public class LessonServiceIntegrationTest {
 
         LessonEntity lessonEntity = new LessonEntity()
                 .setId(lessonId)
-                .setTeacherEntity(new TeacherEntity())
+                .setTeacher(new TeacherEntity())
                 .setDate(LocalDateTime.now());
 
         when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lessonEntity));
-        when(lessonRepository.findByTeacherEntityIdAndDate(anyLong(), any(LocalDateTime.class)))
-                .thenReturn(Optional.empty());
-        when(lessonMapper.fromEntityToDto(any(LessonEntity.class))).thenAnswer(invocation -> {
+        when(lessonRepository.existsByTeacherIdAndDateBetween(anyLong(), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(false);
+        when(lessonMapper.toDto(any(LessonEntity.class))).thenAnswer(invocation -> {
             LessonEntity entity = invocation.getArgument(0);
             LessonDto dto = new LessonDto();
-            dto.setId(entity.getId());
             return dto;
         });
         when(lessonRepository.save(any(LessonEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));

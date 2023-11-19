@@ -2,18 +2,20 @@ package pl.szlify.codingapi.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pl.szlify.codingapi.exceptions.LessonInFutureException;
 import pl.szlify.codingapi.exceptions.MissingStudentException;
 import pl.szlify.codingapi.exceptions.LackOfTeacherException;
 import pl.szlify.codingapi.exceptions.BadLanguageException;
 import pl.szlify.codingapi.model.*;
+import pl.szlify.codingapi.model.dto.StudentShortDto;
+import pl.szlify.codingapi.model.dto.StudentFullDto;
 import pl.szlify.codingapi.repository.LessonRepository;
 import pl.szlify.codingapi.repository.StudentRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
 import pl.szlify.codingapi.mapper.StudentMapper;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,64 +26,65 @@ public class StudentService {
     private final TeacherRepository teacherRepository;
     private final StudentMapper studentMapper;
 
-    public List<StudentBasicInfoDto> getStudentsList() {
+    public List<StudentShortDto> getStudentsList() {
         return studentRepository.findAll().stream()
-                .map(studentMapper::fromEntityToBasicInfoDto)
+                .map(studentMapper::toShortDto)
                 .collect(Collectors.toList());
     }
 
-    public StudentDto getStudent(Long id) {
+    public StudentFullDto getStudent(Long id) {
         StudentEntity studentEntity = studentRepository.findById(id)
                 .orElseThrow(MissingStudentException::new);
-        return studentMapper.fromEntityToDto(studentEntity);
+        return studentMapper.toFullDto(studentEntity);
     }
 
-    public StudentBasicInfoDto addStudent(StudentBasicInfoDto studentBasicInfoDto) {
-        TeacherEntity teacherEntity = teacherRepository.findByIdAndRemovedFalse(studentBasicInfoDto.getTeacherId())
+    public StudentShortDto addStudent(StudentShortDto studentShortDto) {
+        TeacherEntity teacherEntity = teacherRepository.findByIdAndDeletedFalse(studentShortDto.getTeacherId())
                 .orElseThrow(LackOfTeacherException::new);
-        if (!teacherEntity.getLanguages().contains(studentBasicInfoDto.getLanguage())) {
+        if (!teacherEntity.getLanguages().contains(studentShortDto.getLanguage())) {
             throw new BadLanguageException();
         }
-        StudentEntity studentEntity = studentMapper.fromBasicInfoDtoToEntity(studentBasicInfoDto);
-        studentEntity.setTeacherEntity(teacherEntity);
-        return studentMapper.fromEntityToBasicInfoDto(studentRepository.save(studentEntity));
+        StudentEntity studentEntity = studentMapper.toEntity(studentShortDto);
+        studentEntity.setTeacher(teacherEntity);
+        return studentMapper.toShortDto(studentRepository.save(studentEntity));
     }
 
-    public StudentDto updateEntireStudent(Long id, StudentBasicInfoDto studentBasicInfoDto) {
+    @Transactional
+    public StudentFullDto updateEntireStudent(Long id, StudentShortDto studentShortDto) {
         StudentEntity studentEntity = studentRepository.findById(id)
                 .orElseThrow(MissingStudentException::new);
 
-        TeacherEntity teacherEntity = teacherRepository.findByIdAndRemovedFalse(studentBasicInfoDto.getTeacherId())
+        TeacherEntity teacherEntity = teacherRepository.findByIdAndDeletedFalse(studentShortDto.getTeacherId())
                 .orElseThrow(LackOfTeacherException::new);
 
-        if (!teacherEntity.getLanguages().contains(studentBasicInfoDto.getLanguage())) {
+        if (!teacherEntity.getLanguages().contains(studentShortDto.getLanguage())) {
             throw new BadLanguageException();
         }
 
         StudentEntity updatedStudentEntity = studentMapper
-                .fromBasicInfoAndEntityToEntity(studentEntity, studentBasicInfoDto);
-        updatedStudentEntity.setTeacherEntity(teacherEntity);
-        return studentMapper.fromEntityToDto(studentRepository.save(updatedStudentEntity));
+                .toEntityUpdate(studentEntity, studentShortDto);
+        updatedStudentEntity.setTeacher(teacherEntity);
+        return studentMapper.toFullDto(studentRepository.save(updatedStudentEntity));
     }
 
-    public StudentBasicInfoDto updateStudentTeacher(Long id, Long teacherId) {
+    public StudentShortDto updateStudentTeacher(Long id, Long teacherId) {
         StudentEntity studentEntity = studentRepository.findById(id)
                 .orElseThrow(MissingStudentException::new);
 
-        TeacherEntity teacherEntity = teacherRepository.findByIdAndRemovedFalse(teacherId)
+        TeacherEntity teacherEntity = teacherRepository.findByIdAndDeletedFalse(teacherId)
                 .orElseThrow(LackOfTeacherException::new);
 
         if (!teacherEntity.getLanguages().contains(studentEntity.getLanguage())) {
             throw new BadLanguageException();
         }
-        studentEntity.setTeacherEntity(teacherEntity);
+        studentEntity.setTeacher(teacherEntity);
         studentRepository.save(studentEntity);
-        return studentMapper.fromEntityToBasicInfoDto(studentEntity);
+        return studentMapper.toShortDto(studentEntity);
     }
 
     public void deleteStudent(Long id) {
-        Optional<LessonEntity> existingLesson = lessonRepository.findByStudentEntityId(id);
-        if (existingLesson.isPresent()) {
+        boolean existsDate = lessonRepository.existsByStudentId(id);
+        if (existsDate) {
             throw new LessonInFutureException();
         }
         studentRepository.deleteById(id);

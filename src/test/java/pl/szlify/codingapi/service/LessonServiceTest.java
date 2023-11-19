@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.szlify.codingapi.exceptions.*;
 import pl.szlify.codingapi.mapper.LessonMapper;
-import pl.szlify.codingapi.model.LessonDto;
+import pl.szlify.codingapi.model.dto.LessonDto;
 import pl.szlify.codingapi.model.LessonEntity;
 import pl.szlify.codingapi.model.StudentEntity;
 import pl.szlify.codingapi.model.TeacherEntity;
@@ -18,9 +18,7 @@ import pl.szlify.codingapi.repository.StudentRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,9 +53,9 @@ public class LessonServiceTest {
     public void getAllLessonsTest() {
         // Given
         LessonEntity lessonEntity = new LessonEntity().setId(faker.number().randomNumber());
-        LessonDto lessonDto = new LessonDto().setId(lessonEntity.getId());
+        LessonDto lessonDto = new LessonDto();
         when(lessonRepository.findAll()).thenReturn(Collections.singletonList(lessonEntity));
-        when(lessonMapper.fromEntityToDto(lessonEntity)).thenReturn(lessonDto);
+        when(lessonMapper.toDto(lessonEntity)).thenReturn(lessonDto);
 
         // When
         List<LessonDto> result = lessonService.getAllLessons();
@@ -72,7 +70,7 @@ public class LessonServiceTest {
         // Given
         Long id = faker.number().randomNumber();
         LessonEntity lessonEntity = new LessonEntity().setId(id);
-        LessonDto lessonDto = new LessonDto().setId(lessonEntity.getId());
+        LessonDto lessonDto = new LessonDto();
         givenLessonEntityInRepository(id, lessonEntity, lessonDto);
 
         // When
@@ -98,31 +96,28 @@ public class LessonServiceTest {
 
     @Test
     public void addLessonTest() {
-        // Given
         LessonDto lessonDto = generateRandomLessonDto();
-
         TeacherEntity teacherEntity = new TeacherEntity().setId(lessonDto.getTeacherId());
-        StudentEntity studentEntity = new StudentEntity().setTeacherEntity(teacherEntity);
-
+        StudentEntity studentEntity = new StudentEntity().setTeacher(teacherEntity);
         LessonEntity lessonEntity = new LessonEntity()
-                .setTeacherEntity(teacherEntity)
-                .setStudentEntity(studentEntity);
+                .setTeacher(teacherEntity)
+                .setStudent(studentEntity);
+        LocalDateTime start = lessonDto.getDate();
+        LocalDateTime end = start.plusMinutes(60).plusMinutes(15);
 
-        when(teacherRepository.findByIdAndRemovedFalse(lessonDto.getTeacherId())).thenReturn(Optional.of(teacherEntity));
-        when(studentRepository.findByIdAndRemovedFalse(lessonDto.getStudentId())).thenReturn(Optional.of(studentEntity));
-        when(lessonRepository.findByTeacherEntityIdAndDate(lessonDto.getTeacherId(), lessonDto.getDate())).thenReturn(Optional.empty());
-        when(lessonMapper.fromDtoToEntity(lessonDto)).thenReturn(lessonEntity);
-        when(lessonMapper.fromEntityToDto(lessonEntity)).thenReturn(lessonDto);
+        when(teacherRepository.findByIdAndDeletedFalse(lessonDto.getTeacherId())).thenReturn(Optional.of(teacherEntity));
+        when(studentRepository.findByIdAndDeletedFalse(lessonDto.getStudentId())).thenReturn(Optional.of(studentEntity));
+        when(lessonRepository.existsByTeacherIdAndDateBetween(lessonDto.getTeacherId(), start.minusMinutes(75), end.plusMinutes(75))).thenReturn(false);
+        when(lessonMapper.toEntity(lessonDto)).thenReturn(lessonEntity);
+        when(lessonRepository.save(lessonEntity)).thenReturn(lessonEntity);
+        when(lessonMapper.toDto(lessonEntity)).thenReturn(lessonDto);
 
-        // When
         LessonDto result = lessonService.addLesson(lessonDto);
 
-        // Then
-        verify(teacherRepository, times(1)).findByIdAndRemovedFalse(lessonDto.getTeacherId());
-        verify(studentRepository, times(1)).findByIdAndRemovedFalse(lessonDto.getStudentId());
-        verify(lessonRepository, times(1)).findByTeacherEntityIdAndDate(lessonDto.getTeacherId(), lessonDto.getDate());
-        verify(lessonMapper, times(1)).fromDtoToEntity(lessonDto);
-        verify(lessonMapper, times(1)).fromEntityToDto(lessonEntity);
+        verify(teacherRepository, times(1)).findByIdAndDeletedFalse(lessonDto.getTeacherId());
+        verify(studentRepository, times(1)).findByIdAndDeletedFalse(lessonDto.getStudentId());
+        verify(lessonRepository, times(1)).existsByTeacherIdAndDateBetween(lessonDto.getTeacherId(), start.minusMinutes(75), end.plusMinutes(75));
+        verify(lessonRepository, times(1)).save(lessonEntity);
         assertEquals(lessonDto, result);
     }
 
@@ -130,13 +125,13 @@ public class LessonServiceTest {
     public void addLessonTest_shouldThrowLackofTeacherException() {
         // Given
         LessonDto lessonDto = generateRandomLessonDto();
-        when(teacherRepository.findByIdAndRemovedFalse(lessonDto.getTeacherId())).thenReturn(Optional.empty());
+        when(teacherRepository.findByIdAndDeletedFalse(lessonDto.getTeacherId())).thenReturn(Optional.empty());
 
         // When
         assertThrows(LackOfTeacherException.class, () -> lessonService.addLesson(lessonDto));
 
         // Then
-        verify(teacherRepository).findByIdAndRemovedFalse(lessonDto.getTeacherId());
+        verify(teacherRepository).findByIdAndDeletedFalse(lessonDto.getTeacherId());
         verifyNoInteractions(studentRepository, lessonRepository, lessonMapper);
     }
 
@@ -145,15 +140,15 @@ public class LessonServiceTest {
         // Given
         LessonDto lessonDto = generateRandomLessonDto();
         TeacherEntity teacherEntity = new TeacherEntity();
-        when(teacherRepository.findByIdAndRemovedFalse(lessonDto.getTeacherId())).thenReturn(Optional.of(teacherEntity));
-        when(studentRepository.findByIdAndRemovedFalse(lessonDto.getStudentId())).thenReturn(Optional.empty());
+        when(teacherRepository.findByIdAndDeletedFalse(lessonDto.getTeacherId())).thenReturn(Optional.of(teacherEntity));
+        when(studentRepository.findByIdAndDeletedFalse(lessonDto.getStudentId())).thenReturn(Optional.empty());
 
         // When
         assertThrows(MissingStudentException.class, () -> lessonService.addLesson(lessonDto));
 
         // Then
-        verify(teacherRepository).findByIdAndRemovedFalse(lessonDto.getTeacherId());
-        verify(studentRepository).findByIdAndRemovedFalse(lessonDto.getStudentId());
+        verify(teacherRepository).findByIdAndDeletedFalse(lessonDto.getTeacherId());
+        verify(studentRepository).findByIdAndDeletedFalse(lessonDto.getStudentId());
         verifyNoInteractions(lessonRepository, lessonMapper);
     }
 
@@ -162,9 +157,9 @@ public class LessonServiceTest {
         // Given
         LessonDto lessonDto = generateRandomLessonDto();
         TeacherEntity teacherEntity = new TeacherEntity().setId(2L);
-        StudentEntity studentEntity = new StudentEntity().setTeacherEntity(teacherEntity);
-        when(teacherRepository.findByIdAndRemovedFalse(lessonDto.getTeacherId())).thenReturn(Optional.of(teacherEntity));
-        when(studentRepository.findByIdAndRemovedFalse(lessonDto.getStudentId())).thenReturn(Optional.of(studentEntity));
+        StudentEntity studentEntity = new StudentEntity().setTeacher(teacherEntity);
+        when(teacherRepository.findByIdAndDeletedFalse(lessonDto.getTeacherId())).thenReturn(Optional.of(teacherEntity));
+        when(studentRepository.findByIdAndDeletedFalse(lessonDto.getStudentId())).thenReturn(Optional.of(studentEntity));
 
         // When
         Exception exception = assertThrows(NotYourTeacherException.class, () -> {
@@ -181,25 +176,38 @@ public class LessonServiceTest {
     public void updateEntireLessonTest_shouldThrowBusyTermLessonException() {
         // Given
         Long id = faker.number().randomNumber();
-        LessonDto updatedLessonDto = generateRandomLessonDto();
+        LessonDto lessonDto = new LessonDto()
+                .setTeacherId(faker.number().randomNumber())
+                .setStudentId(faker.number().randomNumber())
+                .setDate(LocalDateTime.now());
 
-        TeacherEntity mockTeacherEntity = new TeacherEntity()
-                .setId(updatedLessonDto.getTeacherId());
+        TeacherEntity teacherEntity = new TeacherEntity()
+                .setId(lessonDto.getTeacherId());
 
-        StudentEntity mockStudentEntity = new StudentEntity()
-                .setId(updatedLessonDto.getStudentId())
-                .setTeacherEntity(mockTeacherEntity);
+        StudentEntity studentEntity = new StudentEntity()
+                .setId(lessonDto.getStudentId())
+                .setTeacher(teacherEntity);
 
-        when(teacherRepository.findByIdAndRemovedFalse(updatedLessonDto.getTeacherId())).thenReturn(Optional.of(mockTeacherEntity));
-        when(studentRepository.findByIdAndRemovedFalse(updatedLessonDto.getStudentId())).thenReturn(Optional.of(mockStudentEntity));
-        when(lessonRepository.findByTeacherEntityIdAndDate(updatedLessonDto.getTeacherId(), updatedLessonDto.getDate())).thenReturn(Optional.of(new LessonEntity()));
+        LessonEntity conflictingLesson = new LessonEntity()
+                .setId(faker.number().randomNumber())
+                .setDate(lessonDto.getDate())
+                .setTeacher(teacherEntity);
+
+        when(teacherRepository.findByIdAndDeletedFalse(lessonDto.getTeacherId())).thenReturn(Optional.of(teacherEntity));
+        when(studentRepository.findByIdAndDeletedFalse(lessonDto.getStudentId())).thenReturn(Optional.of(studentEntity));
+        when(lessonRepository.findByTeacherIdAndDateBetween(any(), any(), any())).thenReturn(Arrays.asList(conflictingLesson));
 
         // When
-        assertThrows(BusyTermLessonException.class, () -> lessonService.updateEntireLesson(id, updatedLessonDto));
+        assertThrows(BusyTermLessonException.class, () -> lessonService.updateEntireLesson(id, lessonDto));
 
         // Then
+        verify(teacherRepository, times(1)).findByIdAndDeletedFalse(lessonDto.getTeacherId());
+        verify(studentRepository, times(1)).findByIdAndDeletedFalse(lessonDto.getStudentId());
+        verify(lessonRepository, times(1)).findByTeacherIdAndDateBetween(any(), any(), any());
+        verify(lessonRepository, never()).findById(any());
         verify(lessonRepository, never()).save(any());
     }
+
 
     @Test
     public void updateLessonDateTest() {
@@ -210,26 +218,24 @@ public class LessonServiceTest {
         LessonEntity lessonEntity = new LessonEntity()
                 .setId(id)
                 .setDate(LocalDateTime.now())
-                .setTeacherEntity(new TeacherEntity());
+                .setTeacher(new TeacherEntity());
 
         LessonDto updatedLessonDto = new LessonDto()
-                .setId(id)
                 .setDate(newDateTime);
 
         when(lessonRepository.findById(id)).thenReturn(Optional.of(lessonEntity));
-        when(lessonRepository.findByTeacherEntityIdAndDate(any(), any())).thenReturn(Optional.empty());
-        when(lessonMapper.fromEntityToDto(lessonEntity)).thenReturn(updatedLessonDto);
+        when(lessonRepository.findByTeacherIdAndDateBetween(any(), any(), any())).thenReturn(Collections.emptyList());
+        when(lessonMapper.toDto(any())).thenReturn(updatedLessonDto);
 
         // When
         LessonDto result = lessonService.updateLessonDate(id, newDateTime);
 
         // Then
         assertNotNull(result);
-        assertEquals(updatedLessonDto.getId(), result.getId());
         assertEquals(updatedLessonDto.getDate(), result.getDate());
         verify(lessonRepository, times(1)).findById(id);
-        verify(lessonRepository, times(1)).findByTeacherEntityIdAndDate(any(), any());
-        verify(lessonRepository, times(1)).save(lessonEntity);
+        verify(lessonRepository, times(1)).findByTeacherIdAndDateBetween(any(), any(), any());
+        verify(lessonRepository, times(1)).save(any());
     }
 
     @Test
@@ -245,7 +251,6 @@ public class LessonServiceTest {
 
         // Then
         verify(lessonRepository, times(1)).findById(id);
-        verify(lessonRepository, never()).findByTeacherEntityIdAndDate(any(), any());
         verify(lessonRepository, never()).save(any());
     }
 
@@ -253,22 +258,27 @@ public class LessonServiceTest {
     public void updateLessonDateTest_shouldThrowBusyTermLessonException() {
         // Given
         Long id = faker.number().randomNumber();
-        LocalDateTime newDateTime = LocalDateTime.now().plusDays(1);
+        LocalDateTime newDateTime = LocalDateTime.now();
 
         LessonEntity lessonEntity = new LessonEntity()
                 .setId(id)
                 .setDate(LocalDateTime.now())
-                .setTeacherEntity(new TeacherEntity());
+                .setTeacher(new TeacherEntity());
+
+        LessonEntity conflictingLesson = new LessonEntity()
+                .setId(faker.number().randomNumber())
+                .setDate(newDateTime)
+                .setTeacher(new TeacherEntity());
 
         when(lessonRepository.findById(id)).thenReturn(Optional.of(lessonEntity));
-        when(lessonRepository.findByTeacherEntityIdAndDate(any(), any())).thenReturn(Optional.of(new LessonEntity()));
+        when(lessonRepository.findByTeacherIdAndDateBetween(any(), any(), any())).thenReturn(Arrays.asList(conflictingLesson));
 
         // When
         assertThrows(BusyTermLessonException.class, () -> lessonService.updateLessonDate(id, newDateTime));
 
         // Then
         verify(lessonRepository, times(1)).findById(id);
-        verify(lessonRepository, times(1)).findByTeacherEntityIdAndDate(any(), any());
+        verify(lessonRepository, times(1)).findByTeacherIdAndDateBetween(any(), any(), any());
         verify(lessonRepository, never()).save(any());
     }
 
@@ -324,12 +334,11 @@ public class LessonServiceTest {
 
     private void givenLessonEntityInRepository(Long id, LessonEntity lessonEntity, LessonDto lessonDto) {
         when(lessonRepository.findById(id)).thenReturn(Optional.of(lessonEntity));
-        when(lessonMapper.fromEntityToDto(lessonEntity)).thenReturn(lessonDto);
+        when(lessonMapper.toDto(lessonEntity)).thenReturn(lessonDto);
     }
 
     private void assertLessonDtoResult(LessonDto expected, LessonDto actual) {
         assertNotNull(actual);
-        assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getTeacherId(), actual.getTeacherId());
         assertEquals(expected.getStudentId(), actual.getStudentId());
         assertEquals(expected.getDate(), actual.getDate());
@@ -337,7 +346,6 @@ public class LessonServiceTest {
 
     private LessonDto generateRandomLessonDto() {
         return new LessonDto()
-                .setId(faker.number().randomNumber())
                 .setTeacherId(faker.number().randomNumber())
                 .setStudentId(faker.number().randomNumber())
                 .setDate(LocalDateTime.now().plusDays(faker.number().numberBetween(1, 365)));

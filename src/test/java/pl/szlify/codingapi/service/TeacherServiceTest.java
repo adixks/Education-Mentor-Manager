@@ -13,8 +13,8 @@ import pl.szlify.codingapi.exceptions.LackOfTeacherException;
 import pl.szlify.codingapi.exceptions.LessonInFutureException;
 import pl.szlify.codingapi.mapper.TeacherMapper;
 import pl.szlify.codingapi.model.LessonEntity;
-import pl.szlify.codingapi.model.TeacherBasicInfoDto;
-import pl.szlify.codingapi.model.TeacherDto;
+import pl.szlify.codingapi.model.dto.TeacherShortDto;
+import pl.szlify.codingapi.model.dto.TeacherFullDto;
 import pl.szlify.codingapi.model.TeacherEntity;
 import pl.szlify.codingapi.repository.LessonRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
@@ -49,17 +49,17 @@ public class TeacherServiceTest {
     public void getTeachersListTest() {
         // Given
         TeacherEntity teacherEntity = createMockTeacherEntity();
-        TeacherBasicInfoDto teacherBasicInfoDto = createMockTeacherBasicInfoDto(teacherEntity);
+        TeacherShortDto teacherShortDto = createMockTeacherBasicInfoDto(teacherEntity);
 
         when(teacherRepository.findAll()).thenReturn(Collections.singletonList(teacherEntity));
-        when(teacherMapper.fromEntityToNajwInfoDto(teacherEntity)).thenReturn(teacherBasicInfoDto);
+        when(teacherMapper.toShortDto(teacherEntity)).thenReturn(teacherShortDto);
 
         // When
-        List<TeacherBasicInfoDto> result = teacherService.getTeachersList();
+        List<TeacherShortDto> result = teacherService.getTeachersList();
 
         // Then
         assertEquals(1, result.size());
-        assertEquals(teacherBasicInfoDto, result.get(0));
+        assertEquals(teacherShortDto, result.get(0));
     }
 
     @Test
@@ -70,18 +70,18 @@ public class TeacherServiceTest {
                 .setId(id)
                 .setFirstName(faker.name().fullName());
 
-        TeacherDto teacherDto = new TeacherDto()
+        TeacherFullDto teacherFullDto = new TeacherFullDto()
                 .setId(teacherEntity.getId())
                 .setFirstName(teacherEntity.getFirstName());
 
         when(teacherRepository.findById(id)).thenReturn(Optional.of(teacherEntity));
-        when(teacherMapper.fromEntityToDto(teacherEntity)).thenReturn(teacherDto);
+        when(teacherMapper.toFullDto(teacherEntity)).thenReturn(teacherFullDto);
 
         // When
-        TeacherDto result = teacherService.getTeacher(id);
+        TeacherFullDto result = teacherService.getTeacher(id);
 
         // Then
-        assertEquals(teacherDto, result);
+        assertEquals(teacherFullDto, result);
     }
 
     @Test
@@ -97,35 +97,32 @@ public class TeacherServiceTest {
     @Test
     public void addTeacherTest() {
         // Given
-        TeacherBasicInfoDto teacherBasicInfoDto = new TeacherBasicInfoDto();
-        teacherBasicInfoDto.setId(faker.number().randomNumber());
-        teacherBasicInfoDto.setFirstName(faker.name().fullName());
+        TeacherShortDto teacherShortDto = new TeacherShortDto();
+        teacherShortDto.setFirstName(faker.name().fullName());
 
         TeacherEntity teacherEntity = new TeacherEntity()
-                .setId(teacherBasicInfoDto.getId())
-                .setFirstName(teacherBasicInfoDto.getFirstName());
+                .setFirstName(teacherShortDto.getFirstName());
 
-        TeacherDto teacherDto = new TeacherDto()
+        TeacherFullDto teacherFullDto = new TeacherFullDto()
                 .setId(teacherEntity.getId())
                 .setFirstName(teacherEntity.getFirstName());
 
-        when(teacherMapper.fromNajwInfoToEntity(teacherBasicInfoDto)).thenReturn(teacherEntity);
+        when(teacherMapper.toEntity(teacherShortDto)).thenReturn(teacherEntity);
         when(teacherRepository.save(teacherEntity)).thenReturn(teacherEntity);
-        when(teacherMapper.fromEntityToDto(teacherEntity)).thenReturn(teacherDto);
+        when(teacherMapper.toFullDto(teacherEntity)).thenReturn(teacherFullDto);
 
         // When
-        TeacherDto result = teacherService.addTeacher(teacherBasicInfoDto);
+        TeacherFullDto result = teacherService.addTeacher(teacherShortDto);
 
         // Then
-        assertEquals(teacherDto, result);
+        assertEquals(teacherFullDto, result);
     }
 
     @Test
     public void updateEntireTeacherTest() {
         // Given
         Long id = faker.number().randomNumber();
-        TeacherBasicInfoDto teacherBasicInfoDto = new TeacherBasicInfoDto()
-                .setId(id)
+        TeacherShortDto teacherShortDto = new TeacherShortDto()
                 .setFirstName(faker.name().fullName());
 
         TeacherEntity teacherEntity = new TeacherEntity()
@@ -137,15 +134,15 @@ public class TeacherServiceTest {
                 .setFirstName(faker.name().fullName());
 
         when(teacherRepository.findById(id)).thenReturn(Optional.of(teacherEntity));
-        when(teacherMapper.fromNajwInfoAndEntityToEntity(teacherEntity, teacherBasicInfoDto)).thenReturn(updatedTeacherEntity);
+        when(teacherMapper.toEntityUpdate(teacherEntity, teacherShortDto)).thenReturn(updatedTeacherEntity);
         when(teacherRepository.save(updatedTeacherEntity)).thenReturn(updatedTeacherEntity);
-        when(teacherMapper.fromEntityToNajwInfoDto(updatedTeacherEntity)).thenReturn(teacherBasicInfoDto);
+        when(teacherMapper.toShortDto(updatedTeacherEntity)).thenReturn(teacherShortDto);
 
         // When
-        TeacherBasicInfoDto result = teacherService.updateEntireTeacher(id, teacherBasicInfoDto);
+        TeacherShortDto result = teacherService.updateEntireTeacher(id, teacherShortDto);
 
         // Then
-        assertEquals(teacherBasicInfoDto, result);
+        assertEquals(teacherShortDto, result);
     }
 
     @Test
@@ -153,13 +150,12 @@ public class TeacherServiceTest {
         // Given
         Long teacherId = faker.number().randomNumber();
         List<String> languagesList = Arrays.asList(faker.lorem().word(), faker.lorem().word());
-        TeacherBasicInfoDto teacherBasicInfoDto = new TeacherBasicInfoDto()
-                .setId(teacherId)
+        TeacherShortDto teacherShortDto = new TeacherShortDto()
                 .setLanguages(languagesList);
         when(teacherRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         // When - Then
-        assertThrows(LackOfTeacherException.class, () -> teacherService.updateEntireTeacher(teacherId, teacherBasicInfoDto));
+        assertThrows(LackOfTeacherException.class, () -> teacherService.updateEntireTeacher(teacherId, teacherShortDto));
     }
 
     @Test
@@ -172,19 +168,18 @@ public class TeacherServiceTest {
                 .setId(id)
                 .setLanguages(new ArrayList<>());
 
-        TeacherBasicInfoDto teacherBasicInfoDto = new TeacherBasicInfoDto()
-                .setId(id)
+        TeacherShortDto teacherShortDto = new TeacherShortDto()
                 .setLanguages(languagesList);
 
         when(teacherRepository.findById(id)).thenReturn(Optional.of(teacherEntity));
         when(teacherRepository.save(teacherEntity)).thenReturn(teacherEntity);
-        when(teacherMapper.fromEntityToNajwInfoDto(teacherEntity)).thenReturn(teacherBasicInfoDto);
+        when(teacherMapper.toShortDto(teacherEntity)).thenReturn(teacherShortDto);
 
         // When
-        TeacherBasicInfoDto result = teacherService.updateTeacherLanguagesList(id, languagesList);
+        TeacherShortDto result = teacherService.updateTeacherLanguagesList(id, languagesList);
 
         // Then
-        assertEquals(teacherBasicInfoDto, result);
+        assertEquals(teacherShortDto, result);
     }
 
     @Test
@@ -205,17 +200,17 @@ public class TeacherServiceTest {
 
         TeacherEntity teacherEntity = new TeacherEntity()
                 .setId(id)
-                .setRemoved(false);
+                .setDeleted(false);
 
         when(teacherRepository.findById(id)).thenReturn(Optional.of(teacherEntity));
-        when(lessonRepository.findByTeacherEntityId(id)).thenReturn(Optional.empty());
+        when(lessonRepository.existsByTeacherId(id)).thenReturn(false);
         when(teacherRepository.save(teacherEntity)).thenAnswer(i -> i.getArguments()[0]);
 
         // When
         teacherService.deleteTeacher(id);
 
         // Then
-        assertTrue(teacherEntity.getRemoved().equals(true));
+        assertTrue(teacherEntity.getDeleted().equals(true));
     }
 
     @Test
@@ -234,7 +229,7 @@ public class TeacherServiceTest {
         Long teacherId = faker.number().randomNumber();
         TeacherEntity teacherEntity = new TeacherEntity();
         when(teacherRepository.findById(anyLong())).thenReturn(Optional.of(teacherEntity));
-        when(lessonRepository.findByTeacherEntityId(anyLong())).thenReturn(Optional.of(new LessonEntity()));
+        when(lessonRepository.existsByTeacherId(anyLong())).thenReturn(true);
 
         // When - Then
         assertThrows(LessonInFutureException.class, () -> teacherService.deleteTeacher(teacherId));
@@ -246,9 +241,8 @@ public class TeacherServiceTest {
                 .setFirstName(faker.name().fullName());
     }
 
-    private TeacherBasicInfoDto createMockTeacherBasicInfoDto(TeacherEntity teacherEntity) {
-        return new TeacherBasicInfoDto()
-                .setId(teacherEntity.getId())
+    private TeacherShortDto createMockTeacherBasicInfoDto(TeacherEntity teacherEntity) {
+        return new TeacherShortDto()
                 .setFirstName(teacherEntity.getFirstName());
     }
 }

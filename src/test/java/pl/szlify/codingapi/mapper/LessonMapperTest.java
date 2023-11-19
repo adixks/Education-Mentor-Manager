@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import pl.szlify.codingapi.model.*;
+import pl.szlify.codingapi.model.dto.LessonDto;
 import pl.szlify.codingapi.repository.StudentRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
 
@@ -47,20 +48,19 @@ public class LessonMapperTest {
         LessonEntity entity = new LessonEntity()
                 .setId(faker.number().randomNumber())
                 .setDate(LocalDateTime.now())
-                .setTeacherEntity(teacherEntity)
-                .setStudentEntity(studentEntity);
+                .setTeacher(teacherEntity)
+                .setStudent(studentEntity);
 
         when(teacherEntity.getId()).thenReturn(faker.number().randomNumber());
         when(studentEntity.getId()).thenReturn(faker.number().randomNumber());
 
         // When
-        LessonDto dto = lessonMapper.fromEntityToDto(entity);
+        LessonDto dto = lessonMapper.toDto(entity);
 
         // Then
-        assertEquals(entity.getId(), dto.getId());
         assertEquals(entity.getDate(), dto.getDate());
-        assertEquals(entity.getTeacherEntity().getId(), dto.getTeacherId());
-        assertEquals(entity.getStudentEntity().getId(), dto.getStudentId());
+        assertEquals(entity.getTeacher().getId(), dto.getTeacherId());
+        assertEquals(entity.getStudent().getId(), dto.getStudentId());
     }
 
     @Test
@@ -68,7 +68,6 @@ public class LessonMapperTest {
         // Given
         Faker faker = new Faker();
         LessonDto lessonDto = new LessonDto()
-                .setId(faker.number().randomNumber())
                 .setDate(LocalDateTime.now())
                 .setTeacherId(faker.number().randomNumber())
                 .setStudentId(faker.number().randomNumber());
@@ -86,10 +85,9 @@ public class LessonMapperTest {
         when(studentRepository.findById(lessonDto.getStudentId())).thenReturn(Optional.of(studentEntity));
 
         // When
-        LessonEntity lessonEntity = lessonMapper.fromDtoToEntity(lessonDto);
+        LessonEntity lessonEntity = lessonMapper.toEntity(lessonDto);
 
         // Then
-        assertEquals(lessonDto.getId(), lessonEntity.getId());
         assertEquals(lessonDto.getDate(), lessonEntity.getDate());
     }
 }

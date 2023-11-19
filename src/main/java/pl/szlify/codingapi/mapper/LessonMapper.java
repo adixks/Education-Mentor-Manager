@@ -2,22 +2,20 @@ package pl.szlify.codingapi.mapper;
 
 import org.springframework.stereotype.Component;
 import pl.szlify.codingapi.model.LessonEntity;
-import pl.szlify.codingapi.model.LessonDto;
+import pl.szlify.codingapi.model.dto.LessonDto;
 
 @Component
 public class LessonMapper {
 
-    public LessonDto fromEntityToDto(LessonEntity entity) {
+    public LessonDto toDto(LessonEntity entity) {
         return new LessonDto()
-                .setId(entity.getId())
-                .setTeacherId(entity.getTeacherEntity().getId())
-                .setStudentId(entity.getStudentEntity().getId())
+                .setTeacherId(entity.getTeacher().getId())
+                .setStudentId(entity.getStudent().getId())
                 .setDate(entity.getDate());
     }
 
-    public LessonEntity fromDtoToEntity(LessonDto model) {
+    public LessonEntity toEntity(LessonDto model) {
         return new LessonEntity()
-                .setId(model.getId())
                 .setDate(model.getDate());
         // MAP THE TEACHER AND THE STUDENT
     }

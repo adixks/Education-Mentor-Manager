@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Lesson")
+@Table(name = "LESSON")
 @NoArgsConstructor
 @Getter
 @Setter
@@ -18,13 +18,16 @@ public class LessonEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    private int version;
+
     @ManyToOne
     @JoinColumn(name = "STUDENT_ID")
-    private StudentEntity studentEntity;
+    private StudentEntity student;
 
     @ManyToOne
     @JoinColumn(name = "TEACHER_ID")
-    private TeacherEntity teacherEntity;
+    private TeacherEntity teacher;
 
     private LocalDateTime date;
 }

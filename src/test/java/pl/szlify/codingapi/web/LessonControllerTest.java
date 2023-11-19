@@ -7,8 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import pl.szlify.codingapi.model.LessonDateDto;
-import pl.szlify.codingapi.model.LessonDto;
+import pl.szlify.codingapi.model.dto.LessonDateDto;
+import pl.szlify.codingapi.model.dto.LessonDto;
 import pl.szlify.codingapi.service.LessonService;
 
 import java.time.LocalDateTime;
