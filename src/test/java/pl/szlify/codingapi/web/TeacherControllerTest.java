@@ -35,14 +35,14 @@ class TeacherControllerTest {
         // Given
         Pageable pageable = PageRequest.of(0, 5);
         Page<TeacherShortDto> teacherPage = new PageImpl<>(Arrays.asList(new TeacherShortDto(), new TeacherShortDto()));
-        when(teacherService.getTeachersList(pageable)).thenReturn(teacherPage);
+        when(teacherService.getList(pageable)).thenReturn(teacherPage);
 
         // When
         Page<TeacherShortDto> result = teacherController.getTeachersList(pageable);
 
         // Then
         assertEquals(2, result.getNumberOfElements());
-        verify(teacherService, times(1)).getTeachersList(pageable);
+        verify(teacherService, times(1)).getList(pageable);
     }
 
     @Test

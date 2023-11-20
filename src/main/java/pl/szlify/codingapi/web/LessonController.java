@@ -20,7 +20,7 @@ public class LessonController {
 
     @GetMapping
     public Page<LessonDto> getAllLessons(@PageableDefault(size = 5) Pageable pageable) {
-        return lessonService.getAllLessons(pageable);
+        return lessonService.getList(pageable);
     }
 
     @GetMapping("/{id}")

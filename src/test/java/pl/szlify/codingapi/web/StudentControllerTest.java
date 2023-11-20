@@ -34,7 +34,7 @@ class StudentControllerTest {
         // Given
         Pageable pageable = PageRequest.of(0, 5);
         Page<StudentShortDto> studentPage = new PageImpl<>(Arrays.asList(new StudentShortDto(), new StudentShortDto()));
-        when(studentService.getStudentsList(pageable)).thenReturn(studentPage);
+        when(studentService.getList(pageable)).thenReturn(studentPage);
 
         // When
         Page<StudentShortDto> result = studentController.getStudentsList(pageable);

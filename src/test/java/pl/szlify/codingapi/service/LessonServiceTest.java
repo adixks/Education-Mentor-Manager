@@ -65,7 +65,7 @@ public class LessonServiceTest {
         when(lessonMapper.toDto(lessonEntity)).thenReturn(lessonDto);
 
         // When
-        Page<LessonDto> result = lessonService.getAllLessons(pageable);
+        Page<LessonDto> result = lessonService.getList(pageable);
 
         // Then
         assertEquals(1, result.getTotalElements());
