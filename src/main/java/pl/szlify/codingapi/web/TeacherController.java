@@ -2,6 +2,9 @@ package pl.szlify.codingapi.web;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,8 +13,6 @@ import pl.szlify.codingapi.model.dto.TeacherShortDto;
 import pl.szlify.codingapi.model.dto.TeacherLanguagesDto;
 import pl.szlify.codingapi.service.TeacherService;
 
-import java.util.List;
-
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/teachers")
@@ -19,8 +20,8 @@ public class TeacherController {
     private final TeacherService teacherService;
 
     @GetMapping
-    public List<TeacherShortDto> getTeachersList() {
-        return teacherService.getTeachersList();
+    public Page<TeacherShortDto> getTeachersList(@PageableDefault(size = 5) Pageable pageable) {
+        return teacherService.getTeachersList(pageable);
     }
 
     @GetMapping("/{id}")
