@@ -38,7 +38,7 @@ public class LessonControllerTest {
         List<LessonDto> lessonsList = Arrays.asList(new LessonDto(), new LessonDto());
         Page<LessonDto> page = new PageImpl<>(lessonsList);
         Pageable pageable = PageRequest.of(0, 5);
-        when(lessonService.getAllLessons(pageable)).thenReturn(page);
+        when(lessonService.getList(pageable)).thenReturn(page);
 
         // When
         Page<LessonDto> result = lessonController.getAllLessons(pageable);

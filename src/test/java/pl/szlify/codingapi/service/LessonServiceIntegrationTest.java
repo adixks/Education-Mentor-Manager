@@ -75,7 +75,7 @@ public class LessonServiceIntegrationTest {
         when(lessonMapper.toDto(lessonEntity2)).thenReturn(new LessonDto());
 
         // When
-        Page<LessonDto> result = lessonService.getAllLessons(pageable);
+        Page<LessonDto> result = lessonService.getList(pageable);
 
         // Then
         assertNotNull(result);

@@ -75,7 +75,7 @@ public class StudentServiceIntegrationTest {
         when(studentMapper.toShortDto(studentEntity)).thenReturn(studentShortDto);
 
         // When
-        Page<StudentShortDto> result = studentService.getStudentsList(pageable);
+        Page<StudentShortDto> result = studentService.getList(pageable);
 
         // Then
         assertEquals(1, result.getTotalElements());

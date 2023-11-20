@@ -64,7 +64,7 @@ public class TeacherServiceIntegrationTest {
         when(teacherMapper.toShortDto(teacherEntity)).thenReturn(teacherShortDto);
 
         // When
-        Page<TeacherShortDto> result = teacherService.getTeachersList(pageable);
+        Page<TeacherShortDto> result = teacherService.getList(pageable);
 
         // Then
         assertEquals(1, result.getContent().size());
