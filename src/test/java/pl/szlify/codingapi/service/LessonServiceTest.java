@@ -7,6 +7,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import pl.szlify.codingapi.exceptions.*;
 import pl.szlify.codingapi.mapper.LessonMapper;
 import pl.szlify.codingapi.model.dto.LessonDto;
@@ -54,15 +58,18 @@ public class LessonServiceTest {
         // Given
         LessonEntity lessonEntity = new LessonEntity().setId(faker.number().randomNumber());
         LessonDto lessonDto = new LessonDto();
-        when(lessonRepository.findAll()).thenReturn(Collections.singletonList(lessonEntity));
+
+        Page<LessonEntity> pagedResponse = new PageImpl<>(Collections.singletonList(lessonEntity));
+        Pageable pageable = PageRequest.of(0, 5);
+        when(lessonRepository.findAll(pageable)).thenReturn(pagedResponse);
         when(lessonMapper.toDto(lessonEntity)).thenReturn(lessonDto);
 
         // When
-        List<LessonDto> result = lessonService.getAllLessons();
+        Page<LessonDto> result = lessonService.getAllLessons(pageable);
 
         // Then
-        assertEquals(1, result.size());
-        assertEquals(lessonDto, result.get(0));
+        assertEquals(1, result.getTotalElements());
+        assertEquals(lessonDto, result.getContent().get(0));
     }
 
     @Test

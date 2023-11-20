@@ -5,6 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.szlify.codingapi.model.dto.StudentFullDto;
@@ -12,7 +16,6 @@ import pl.szlify.codingapi.model.dto.StudentShortDto;
 import pl.szlify.codingapi.service.StudentService;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -29,14 +32,15 @@ class StudentControllerTest {
     @Test
     void getStudentsList_shouldReturnListOfStudentBasicInfoDto() {
         // Given
-        List<StudentShortDto> studentsList = Arrays.asList(new StudentShortDto(), new StudentShortDto());
-        when(studentService.getStudentsList()).thenReturn(studentsList);
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<StudentShortDto> studentPage = new PageImpl<>(Arrays.asList(new StudentShortDto(), new StudentShortDto()));
+        when(studentService.getStudentsList(pageable)).thenReturn(studentPage);
 
         // When
-        List<StudentShortDto> result = studentController.getStudentsList();
+        Page<StudentShortDto> result = studentController.getStudentsList(pageable);
 
         // Then
-        assertEquals(studentsList, result);
+        assertEquals(studentPage, result);
     }
 
     @Test

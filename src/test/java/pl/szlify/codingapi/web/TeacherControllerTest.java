@@ -5,6 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.szlify.codingapi.model.dto.TeacherFullDto;
@@ -13,7 +17,6 @@ import pl.szlify.codingapi.model.dto.TeacherLanguagesDto;
 import pl.szlify.codingapi.service.TeacherService;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -30,14 +33,16 @@ class TeacherControllerTest {
     @Test
     void getTeachersList_shouldReturnListOfTeacherBasicInfoDto() {
         // Given
-        when(teacherService.getTeachersList()).thenReturn(Arrays.asList(new TeacherShortDto(), new TeacherShortDto()));
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<TeacherShortDto> teacherPage = new PageImpl<>(Arrays.asList(new TeacherShortDto(), new TeacherShortDto()));
+        when(teacherService.getTeachersList(pageable)).thenReturn(teacherPage);
 
         // When
-        List<TeacherShortDto> result = teacherController.getTeachersList();
+        Page<TeacherShortDto> result = teacherController.getTeachersList(pageable);
 
         // Then
-        assertEquals(2, result.size());
-        verify(teacherService, times(1)).getTeachersList();
+        assertEquals(2, result.getNumberOfElements());
+        verify(teacherService, times(1)).getTeachersList(pageable);
     }
 
     @Test

@@ -8,6 +8,10 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import pl.szlify.codingapi.exceptions.BadLanguageException;
 import pl.szlify.codingapi.exceptions.LackOfTeacherException;
@@ -23,7 +27,6 @@ import pl.szlify.codingapi.repository.TeacherRepository;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -66,15 +69,17 @@ public class StudentServiceIntegrationTest {
         StudentShortDto studentShortDto = new StudentShortDto()
                 .setFirstName(studentEntity.getFirstName());
 
-        when(studentRepository.findAll()).thenReturn(Collections.singletonList(studentEntity));
+        Page<StudentEntity> pagedResponse = new PageImpl<>(Collections.singletonList(studentEntity));
+        Pageable pageable = PageRequest.of(0, 5);
+        when(studentRepository.findAll(pageable)).thenReturn(pagedResponse);
         when(studentMapper.toShortDto(studentEntity)).thenReturn(studentShortDto);
 
         // When
-        List<StudentShortDto> result = studentService.getStudentsList();
+        Page<StudentShortDto> result = studentService.getStudentsList(pageable);
 
         // Then
-        assertEquals(1, result.size());
-        assertEquals(studentShortDto, result.get(0));
+        assertEquals(1, result.getTotalElements());
+        assertEquals(studentShortDto, result.getContent().get(0));
     }
 
     @Test

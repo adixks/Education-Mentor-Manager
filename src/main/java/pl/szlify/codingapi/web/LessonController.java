@@ -2,14 +2,15 @@ package pl.szlify.codingapi.web;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.szlify.codingapi.model.dto.LessonDateDto;
 import pl.szlify.codingapi.service.LessonService;
 import pl.szlify.codingapi.model.dto.LessonDto;
-
-import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -18,8 +19,8 @@ public class LessonController {
     private final LessonService lessonService;
 
     @GetMapping
-    public List<LessonDto> getAllLessons() {
-        return lessonService.getAllLessons();
+    public Page<LessonDto> getAllLessons(@PageableDefault(size = 5) Pageable pageable) {
+        return lessonService.getAllLessons(pageable);
     }
 
     @GetMapping("/{id}")
