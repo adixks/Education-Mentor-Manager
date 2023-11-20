@@ -1,6 +1,8 @@
 package pl.szlify.codingapi.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.szlify.codingapi.exceptions.LessonInFutureException;
@@ -14,7 +16,6 @@ import pl.szlify.codingapi.repository.TeacherRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -23,10 +24,8 @@ public class TeacherService {
     private final LessonRepository lessonRepository;
     private final TeacherMapper teacherMapper;
 
-    public List<TeacherShortDto> getTeachersList() {
-        return teacherRepository.findAll().stream()
-                .map(teacherMapper::toShortDto)
-                .collect(Collectors.toList());
+    public Page<TeacherShortDto> getTeachersList(Pageable pageable) {
+        return teacherRepository.findAll(pageable).map(teacherMapper::toShortDto);
     }
 
     public TeacherFullDto getTeacher(Long id) {

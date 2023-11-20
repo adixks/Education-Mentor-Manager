@@ -9,10 +9,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import pl.szlify.codingapi.exceptions.LackOfTeacherException;
 import pl.szlify.codingapi.exceptions.LessonInFutureException;
 import pl.szlify.codingapi.mapper.TeacherMapper;
-import pl.szlify.codingapi.model.LessonEntity;
 import pl.szlify.codingapi.model.dto.TeacherShortDto;
 import pl.szlify.codingapi.model.dto.TeacherFullDto;
 import pl.szlify.codingapi.model.TeacherEntity;
@@ -50,16 +53,17 @@ public class TeacherServiceTest {
         // Given
         TeacherEntity teacherEntity = createMockTeacherEntity();
         TeacherShortDto teacherShortDto = createMockTeacherBasicInfoDto(teacherEntity);
-
-        when(teacherRepository.findAll()).thenReturn(Collections.singletonList(teacherEntity));
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<TeacherEntity> pageOfEntities = new PageImpl<>(Collections.singletonList(teacherEntity));
+        when(teacherRepository.findAll(pageable)).thenReturn(pageOfEntities);
         when(teacherMapper.toShortDto(teacherEntity)).thenReturn(teacherShortDto);
 
         // When
-        List<TeacherShortDto> result = teacherService.getTeachersList();
+        Page<TeacherShortDto> result = teacherService.getTeachersList(pageable);
 
         // Then
-        assertEquals(1, result.size());
-        assertEquals(teacherShortDto, result.get(0));
+        assertEquals(1, result.getContent().size());
+        assertEquals(teacherShortDto, result.getContent().get(0));
     }
 
     @Test

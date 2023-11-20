@@ -5,6 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.szlify.codingapi.model.dto.LessonDateDto;
@@ -32,13 +36,15 @@ public class LessonControllerTest {
     public void getAllLessons_shouldReturnListOfLessonsDto() {
         // Given
         List<LessonDto> lessonsList = Arrays.asList(new LessonDto(), new LessonDto());
-        when(lessonService.getAllLessons()).thenReturn(lessonsList);
+        Page<LessonDto> page = new PageImpl<>(lessonsList);
+        Pageable pageable = PageRequest.of(0, 5);
+        when(lessonService.getAllLessons(pageable)).thenReturn(page);
 
         // When
-        List<LessonDto> result = lessonController.getAllLessons();
+        Page<LessonDto> result = lessonController.getAllLessons(pageable);
 
         // Then
-        assertEquals(lessonsList, result);
+        assertEquals(page.getContent(), result.getContent());
     }
 
     @Test

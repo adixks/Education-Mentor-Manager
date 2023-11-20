@@ -1,6 +1,8 @@
 package pl.szlify.codingapi.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.szlify.codingapi.exceptions.LessonInFutureException;
@@ -15,9 +17,6 @@ import pl.szlify.codingapi.repository.StudentRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
 import pl.szlify.codingapi.mapper.StudentMapper;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 public class StudentService {
@@ -26,10 +25,8 @@ public class StudentService {
     private final TeacherRepository teacherRepository;
     private final StudentMapper studentMapper;
 
-    public List<StudentShortDto> getStudentsList() {
-        return studentRepository.findAll().stream()
-                .map(studentMapper::toShortDto)
-                .collect(Collectors.toList());
+    public Page<StudentShortDto> getStudentsList(Pageable pageable) {
+        return studentRepository.findAll(pageable).map(studentMapper::toShortDto);
     }
 
     public StudentFullDto getStudent(Long id) {

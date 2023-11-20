@@ -4,12 +4,14 @@ import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import pl.szlify.codingapi.exceptions.*;
 import pl.szlify.codingapi.mapper.LessonMapper;
@@ -65,17 +67,19 @@ public class LessonServiceIntegrationTest {
                 .setId(faker.number().randomNumber());
 
         List<LessonEntity> lessonEntities = Arrays.asList(lessonEntity1, lessonEntity2);
+        Page<LessonEntity> pagedResponse = new PageImpl<>(lessonEntities);
+        Pageable pageable = PageRequest.of(0, 5);
 
-        when(lessonRepository.findAll()).thenReturn(lessonEntities);
+        when(lessonRepository.findAll(pageable)).thenReturn(pagedResponse);
         when(lessonMapper.toDto(lessonEntity1)).thenReturn(new LessonDto());
         when(lessonMapper.toDto(lessonEntity2)).thenReturn(new LessonDto());
 
         // When
-        List<LessonDto> result = lessonService.getAllLessons();
+        Page<LessonDto> result = lessonService.getAllLessons(pageable);
 
         // Then
         assertNotNull(result);
-        assertEquals(lessonEntities.size(), result.size());
+        assertEquals(lessonEntities.size(), result.getTotalElements());
         verify(lessonMapper, times(lessonEntities.size())).toDto(any());
     }
 

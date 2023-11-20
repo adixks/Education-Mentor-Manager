@@ -7,6 +7,10 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import pl.szlify.codingapi.exceptions.LackOfTeacherException;
 import pl.szlify.codingapi.exceptions.LessonInFutureException;
 import pl.szlify.codingapi.mapper.TeacherMapper;
@@ -54,15 +58,17 @@ public class TeacherServiceIntegrationTest {
         TeacherShortDto teacherShortDto = new TeacherShortDto()
                 .setFirstName(teacherEntity.getFirstName());
 
-        when(teacherRepository.findAll()).thenReturn(Collections.singletonList(teacherEntity));
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<TeacherEntity> pageOfEntities = new PageImpl<>(Collections.singletonList(teacherEntity));
+        when(teacherRepository.findAll(pageable)).thenReturn(pageOfEntities);
         when(teacherMapper.toShortDto(teacherEntity)).thenReturn(teacherShortDto);
 
         // When
-        List<TeacherShortDto> result = teacherService.getTeachersList();
+        Page<TeacherShortDto> result = teacherService.getTeachersList(pageable);
 
         // Then
-        assertEquals(1, result.size());
-        assertEquals(teacherShortDto, result.get(0));
+        assertEquals(1, result.getContent().size());
+        assertEquals(teacherShortDto, result.getContent().get(0));
     }
 
     @Test
