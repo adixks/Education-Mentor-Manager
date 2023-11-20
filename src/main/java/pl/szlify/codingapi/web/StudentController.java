@@ -21,7 +21,7 @@ public class StudentController {
 
     @GetMapping
     public Page<StudentShortDto> getStudentsList(@PageableDefault(size = 5) Pageable pageable) {
-        return studentService.getStudentsList(pageable);
+        return studentService.getList(pageable);
     }
 
     @GetMapping("/{id}")

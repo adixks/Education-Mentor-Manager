@@ -21,7 +21,7 @@ public class TeacherController {
 
     @GetMapping
     public Page<TeacherShortDto> getTeachersList(@PageableDefault(size = 5) Pageable pageable) {
-        return teacherService.getTeachersList(pageable);
+        return teacherService.getList(pageable);
     }
 
     @GetMapping("/{id}")
