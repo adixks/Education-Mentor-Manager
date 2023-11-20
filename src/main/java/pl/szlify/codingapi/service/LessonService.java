@@ -14,19 +14,21 @@ import pl.szlify.codingapi.model.dto.LessonDto;
 import pl.szlify.codingapi.repository.StudentRepository;
 import pl.szlify.codingapi.repository.LessonRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
+import pl.szlify.codingapi.strategy.ListStrategy;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class LessonService {
+public class LessonService implements ListStrategy<LessonDto> {
     private final LessonRepository lessonRepository;
     private final TeacherRepository teacherRepository;
     private final StudentRepository studentRepository;
     private final LessonMapper lessonMapper;
 
-    public Page<LessonDto> getAllLessons(Pageable pageable) {
+    @Override
+    public Page<LessonDto> getList(Pageable pageable) {
         return lessonRepository.findAll(pageable).map(lessonMapper::toDto);
     }
 
@@ -87,11 +89,10 @@ public class LessonService {
     public LessonDto updateLessonDate(Long id, LocalDateTime localDateTime) {
         LessonEntity lessonEntity = lessonRepository.findById(id)
                 .orElseThrow(NoLessonsException::new);
-        LocalDateTime start = localDateTime;
-        LocalDateTime end = start.plusMinutes(60).plusMinutes(15);
+        LocalDateTime end = localDateTime.plusMinutes(60).plusMinutes(15);
         List<LessonEntity> lessonsInTimeRange = lessonRepository
                 .findByTeacherIdAndDateBetween(lessonEntity.getTeacher().getId(),
-                        start.minusMinutes(75), end.plusMinutes(75));
+                        localDateTime.minusMinutes(75), end.plusMinutes(75));
         lessonsInTimeRange.removeIf(lesson -> lesson.getId().equals(id));
         if (!lessonsInTimeRange.isEmpty()) {
             throw new BusyTermLessonException();
