@@ -87,11 +87,10 @@ public class LessonService {
     public LessonDto updateLessonDate(Long id, LocalDateTime localDateTime) {
         LessonEntity lessonEntity = lessonRepository.findById(id)
                 .orElseThrow(NoLessonsException::new);
-        LocalDateTime start = localDateTime;
-        LocalDateTime end = start.plusMinutes(60).plusMinutes(15);
+        LocalDateTime end = localDateTime.plusMinutes(60).plusMinutes(15);
         List<LessonEntity> lessonsInTimeRange = lessonRepository
                 .findByTeacherIdAndDateBetween(lessonEntity.getTeacher().getId(),
-                        start.minusMinutes(75), end.plusMinutes(75));
+                        localDateTime.minusMinutes(75), end.plusMinutes(75));
         lessonsInTimeRange.removeIf(lesson -> lesson.getId().equals(id));
         if (!lessonsInTimeRange.isEmpty()) {
             throw new BusyTermLessonException();
