@@ -32,9 +32,22 @@ jobs:
           name: Build
           command: mvn -B -DskipTests clean package
       - run:
-          # Then run your tests!
           name: Test
           command: mvn test
+
+  generate-jacoco:
+    working_directory: ~/coding-api
+    docker:
+      - image: cimg/openjdk:17.0
+    steps:
+      - checkout:
+          path: ~/coding-api
+      - run:
+          name: Generate JaCoCo report
+          command: mvn jacoco:report
+      - store_artifacts:
+          path: target/site/jacoco
+          destination: jacoco
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -44,6 +57,8 @@ workflows:
     jobs:
       - build-and-test
       - generate-jacoco:
+          requires:
+            - build-and-test
           filters:
             branches:
               only: main
