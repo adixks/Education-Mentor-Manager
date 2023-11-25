@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
 import pl.szlify.codingapi.exceptions.LackOfTeacherException;
 import pl.szlify.codingapi.exceptions.LessonInFutureException;
 import pl.szlify.codingapi.mapper.TeacherMapper;
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class TeacherServiceIntegrationTest {
 
     @Autowired
