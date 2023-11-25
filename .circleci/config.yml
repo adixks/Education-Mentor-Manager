@@ -17,6 +17,7 @@ jobs:
           POSTGRES_USER: root
           POSTGRES_DB: coding
           POSTGRES_PASSWORD: 1234
+          SPRING_PROFILES_ACTIVE: prod
     # Add steps to the job
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
