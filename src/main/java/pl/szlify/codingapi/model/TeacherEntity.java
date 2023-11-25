@@ -12,12 +12,15 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "version")
 @Accessors(chain = true)
 public class TeacherEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Version
+    private int version;
 
     private String firstName;
 
@@ -33,4 +36,7 @@ public class TeacherEntity {
 
     @OneToMany(mappedBy = "teacher")
     private Set<LessonEntity> lessons;
+
+    @Transient
+    public void setVersion(int version) {}
 }

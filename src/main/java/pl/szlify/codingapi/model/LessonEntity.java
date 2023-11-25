@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "version")
 @Accessors(chain = true)
 public class LessonEntity {
     @Id
@@ -30,4 +30,7 @@ public class LessonEntity {
     private TeacherEntity teacher;
 
     private LocalDateTime date;
+
+    @Transient
+    public void setVersion(int version) {}
 }
