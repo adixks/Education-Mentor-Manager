@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import pl.szlify.codingapi.model.LanguageEntity;
 import pl.szlify.codingapi.model.LessonEntity;
 import pl.szlify.codingapi.model.dto.StudentShortDto;
 import pl.szlify.codingapi.model.dto.StudentFullDto;
@@ -33,13 +34,13 @@ class StudentMapperTest {
     }
 
     @Test
-    public void testFromEntityToDto() {
+    public void testToDto() {
         // Given
         StudentEntity entity = new StudentEntity()
                 .setId(faker.number().randomNumber())
                 .setFirstName(faker.name().firstName())
                 .setLastName(faker.name().lastName())
-                .setLanguage(faker.lorem().word())
+                .setLanguage(new LanguageEntity())
                 .setDeleted(faker.bool().bool());
 
         TeacherEntity teacherEntity = new TeacherEntity()
@@ -59,18 +60,17 @@ class StudentMapperTest {
         assertEquals(entity.getId(), dto.getId());
         assertEquals(entity.getFirstName(), dto.getFirstName());
         assertEquals(entity.getLastName(), dto.getLastName());
-        assertEquals(entity.getLanguage(), dto.getLanguage());
         assertEquals(entity.getDeleted(), dto.getRemoved());
     }
 
     @Test
-    public void testFromEntityToBasicInfoDto() {
+    public void testToShortDto() {
         // Given
         StudentEntity entity = new StudentEntity()
                 .setId(faker.number().randomNumber())
                 .setFirstName(faker.name().firstName())
                 .setLastName(faker.name().lastName())
-                .setLanguage(faker.lorem().word());
+                .setLanguage(new LanguageEntity());
 
         TeacherEntity teacherEntity = new TeacherEntity()
                 .setId(faker.number().randomNumber());
@@ -83,11 +83,10 @@ class StudentMapperTest {
         // Then
         assertEquals(entity.getFirstName(), dto.getFirstName());
         assertEquals(entity.getLastName(), dto.getLastName());
-        assertEquals(entity.getLanguage(), dto.getLanguage());
     }
 
     @Test
-    public void testFromBasicInfoDtoToEntity() {
+    public void testToEntity() {
         // Given
         StudentShortDto dto = new StudentShortDto()
                 .setFirstName(faker.name().firstName())
@@ -100,18 +99,17 @@ class StudentMapperTest {
         // Then
         assertEquals(dto.getFirstName(), entity.getFirstName());
         assertEquals(dto.getLastName(), entity.getLastName());
-        assertEquals(dto.getLanguage(), entity.getLanguage());
         assertFalse(entity.getDeleted());
     }
 
     @Test
-    public void testFromBasicInfoAndEntityToEntity() {
+    public void testToEntityUpdate() {
         // Given
         StudentEntity studentEntity = new StudentEntity()
                 .setId(faker.number().randomNumber())
                 .setFirstName(faker.name().firstName())
                 .setLastName(faker.name().lastName())
-                .setLanguage(faker.lorem().word());
+                .setLanguage(new LanguageEntity());
 
         StudentShortDto dto = new StudentShortDto()
                 .setFirstName(faker.name().firstName())
@@ -125,7 +123,6 @@ class StudentMapperTest {
         assertEquals(studentEntity.getId(), entity.getId());
         assertEquals(dto.getFirstName(), entity.getFirstName());
         assertEquals(dto.getLastName(), entity.getLastName());
-        assertEquals(dto.getLanguage(), entity.getLanguage());
         assertFalse(entity.getDeleted());
     }
 }
