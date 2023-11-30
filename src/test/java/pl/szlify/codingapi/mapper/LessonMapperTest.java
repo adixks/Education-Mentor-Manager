@@ -43,7 +43,7 @@ public class LessonMapperTest {
     }
 
     @Test
-    public void testFromEntityToDto() {
+    public void testToDto() {
         // Given
         LessonEntity entity = new LessonEntity()
                 .setId(faker.number().randomNumber())
@@ -64,7 +64,7 @@ public class LessonMapperTest {
     }
 
     @Test
-    public void testFromDtoToEntity() {
+    public void testToEntity() {
         // Given
         Faker faker = new Faker();
         LessonDto lessonDto = new LessonDto()

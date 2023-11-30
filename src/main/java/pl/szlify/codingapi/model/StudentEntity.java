@@ -27,7 +27,9 @@ public class StudentEntity {
 
     private String lastName;
 
-    private String language;
+    @ManyToOne
+    @JoinColumn(name = "LANGUAGE_ID")
+    private LanguageEntity language;
 
     private Boolean deleted;
 

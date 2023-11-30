@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import pl.szlify.codingapi.model.LessonEntity;
 import pl.szlify.codingapi.model.StudentEntity;
 import pl.szlify.codingapi.model.TeacherEntity;
+import pl.szlify.codingapi.model.LanguageEntity;
 import pl.szlify.codingapi.model.dto.TeacherFullDto;
 import pl.szlify.codingapi.model.dto.TeacherShortDto;
 
@@ -18,25 +19,39 @@ public class TeacherMapper {
                 .setId(entity.getId())
                 .setFirstName(entity.getFirstName())
                 .setLastName(entity.getLastName())
-                .setRemoved(entity.getDeleted())
-                .setLanguages(entity.getLanguages());
+                .setRemoved(entity.getDeleted());
 
         if (entity.getStudentsList() != null) {
-            model.setStudentsListIds(entity.getStudentsList().stream().map(StudentEntity::getId).collect(Collectors.toSet()));
+            model.setStudentsListIds(entity.getStudentsList().stream()
+                    .map(StudentEntity::getId)
+                    .collect(Collectors.toSet()));
         }
 
         if (entity.getLessons() != null) {
-            model.setLessonIds(entity.getLessons().stream().map(LessonEntity::getId).collect(Collectors.toSet()));
+            model.setLessonIds(entity.getLessons().stream()
+                    .map(LessonEntity::getId)
+                    .collect(Collectors.toSet()));
         }
 
+        if (entity.getLanguages() != null) {
+            model.setLanguages(entity.getLanguages().stream()
+                    .map(LanguageEntity::getName)
+                    .collect(Collectors.toSet()));
+        }
         return model;
     }
 
     public TeacherShortDto toShortDto(TeacherEntity entity) {
-        return new TeacherShortDto()
+        TeacherShortDto model = new TeacherShortDto()
                 .setFirstName(entity.getFirstName())
-                .setLastName(entity.getLastName())
-                .setLanguages(entity.getLanguages());
+                .setLastName(entity.getLastName());
+
+        if (entity.getLanguages() != null) {
+            model.setLanguages(entity.getLanguages().stream()
+                    .map(LanguageEntity::getName)
+                    .collect(Collectors.toSet()));
+        }
+        return model;
     }
 
     public TeacherEntity toEntity(TeacherShortDto teacherShortDto) {
@@ -45,14 +60,16 @@ public class TeacherMapper {
                 .setLastName(teacherShortDto.getLastName())
                 .setDeleted(false)
                 .setStudentsList(new HashSet<>())
-                .setLanguages(teacherShortDto.getLanguages())
                 .setLessons(new HashSet<>());
+        // MAP LANGUAGE
     }
 
     public TeacherEntity toEntityUpdate(TeacherEntity teacherEntity, TeacherShortDto teacherShortDto) {
-        teacherEntity.setFirstName(teacherShortDto.getFirstName());
-        teacherEntity.setLastName(teacherShortDto.getLastName());
-        teacherEntity.setLanguages(teacherShortDto.getLanguages());
-        return teacherEntity;
+        return new TeacherEntity()
+                .setId(teacherEntity.getId())
+                .setDeleted(false)
+                .setFirstName(teacherShortDto.getFirstName())
+                .setLastName(teacherShortDto.getLastName());
+        //MAP LANGUAGE
     }
 }

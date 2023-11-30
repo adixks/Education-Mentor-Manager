@@ -25,7 +25,7 @@ public class StudentMapper {
                 .setId(entity.getId())
                 .setFirstName(entity.getFirstName())
                 .setLastName(entity.getLastName())
-                .setLanguage(entity.getLanguage())
+                .setLanguage(entity.getLanguage().getName())
                 .setRemoved(entity.getDeleted())
                 .setTeacherId(entity.getTeacher().getId())
                 .setLessonIds(lessonIds);
@@ -35,7 +35,7 @@ public class StudentMapper {
         return new StudentShortDto()
                 .setFirstName(entity.getFirstName())
                 .setLastName(entity.getLastName())
-                .setLanguage(entity.getLanguage())
+                .setLanguage(entity.getLanguage().getName())
                 .setTeacherId(entity.getTeacher().getId());
     }
 
@@ -43,9 +43,9 @@ public class StudentMapper {
         return new StudentEntity()
                 .setFirstName(studentShortDto.getFirstName())
                 .setLastName(studentShortDto.getLastName())
-                .setLanguage(studentShortDto.getLanguage())
                 .setDeleted(false);
         // MAP THE TEACHER
+        // MAP LANGUAGE
     }
 
     public StudentEntity toEntityUpdate(StudentEntity studentEntity, StudentShortDto studentShortDto) {
@@ -53,8 +53,8 @@ public class StudentMapper {
                 .setId(studentEntity.getId())
                 .setFirstName(studentShortDto.getFirstName())
                 .setLastName(studentShortDto.getLastName())
-                .setDeleted(false)
-                .setLanguage(studentShortDto.getLanguage());
+                .setDeleted(false);
+        // MAP LANGUAGE
         // MAP THE TEACHER
     }
 }
