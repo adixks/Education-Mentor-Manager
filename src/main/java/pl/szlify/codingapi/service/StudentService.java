@@ -5,13 +5,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pl.szlify.codingapi.exceptions.LessonInFutureException;
-import pl.szlify.codingapi.exceptions.MissingStudentException;
-import pl.szlify.codingapi.exceptions.LackOfTeacherException;
-import pl.szlify.codingapi.exceptions.BadLanguageException;
+import pl.szlify.codingapi.exceptions.*;
 import pl.szlify.codingapi.model.*;
 import pl.szlify.codingapi.model.dto.StudentShortDto;
 import pl.szlify.codingapi.model.dto.StudentFullDto;
+import pl.szlify.codingapi.repository.LanguageRepository;
 import pl.szlify.codingapi.repository.LessonRepository;
 import pl.szlify.codingapi.repository.StudentRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
@@ -24,6 +22,7 @@ public class StudentService implements ListStrategy<StudentShortDto> {
     private final StudentRepository studentRepository;
     private final LessonRepository lessonRepository;
     private final TeacherRepository teacherRepository;
+    private final LanguageRepository languageRepository;
     private final StudentMapper studentMapper;
 
     @Override
@@ -40,11 +39,16 @@ public class StudentService implements ListStrategy<StudentShortDto> {
     public StudentShortDto addStudent(StudentShortDto studentShortDto) {
         TeacherEntity teacherEntity = teacherRepository.findByIdAndDeletedFalse(studentShortDto.getTeacherId())
                 .orElseThrow(LackOfTeacherException::new);
-        if (!teacherEntity.getLanguages().contains(studentShortDto.getLanguage())) {
+
+        LanguageEntity languageEntity = languageRepository.findByName(studentShortDto.getLanguage())
+                .orElseThrow(LackOfLanguageException::new);
+
+        if (!teacherEntity.getLanguages().contains(languageEntity)) {
             throw new BadLanguageException();
         }
         StudentEntity studentEntity = studentMapper.toEntity(studentShortDto);
         studentEntity.setTeacher(teacherEntity);
+        studentEntity.setLanguage(languageEntity);
         return studentMapper.toShortDto(studentRepository.save(studentEntity));
     }
 
@@ -56,15 +60,21 @@ public class StudentService implements ListStrategy<StudentShortDto> {
         TeacherEntity teacherEntity = teacherRepository.findByIdAndDeletedFalse(studentShortDto.getTeacherId())
                 .orElseThrow(LackOfTeacherException::new);
 
-        if (!teacherEntity.getLanguages().contains(studentShortDto.getLanguage())) {
+        LanguageEntity newLanguageEntity = languageRepository.findByName(studentShortDto.getLanguage())
+                .orElseThrow(LackOfLanguageException::new);
+
+        Long currentLanguageId = studentEntity.getLanguage().getId();
+        if (!teacherEntity.getLanguages().stream().anyMatch(langEntity -> langEntity.getId().equals(currentLanguageId))) {
             throw new BadLanguageException();
         }
 
-        StudentEntity updatedStudentEntity = studentMapper
-                .toEntityUpdate(studentEntity, studentShortDto);
+        StudentEntity updatedStudentEntity = studentMapper.toEntityUpdate(studentEntity, studentShortDto);
         updatedStudentEntity.setTeacher(teacherEntity);
+        updatedStudentEntity.setLanguage(newLanguageEntity);
+
         return studentMapper.toFullDto(studentRepository.save(updatedStudentEntity));
     }
+
 
     public StudentShortDto updateStudentTeacher(Long id, Long teacherId) {
         StudentEntity studentEntity = studentRepository.findById(id)
@@ -73,7 +83,7 @@ public class StudentService implements ListStrategy<StudentShortDto> {
         TeacherEntity teacherEntity = teacherRepository.findByIdAndDeletedFalse(teacherId)
                 .orElseThrow(LackOfTeacherException::new);
 
-        if (!teacherEntity.getLanguages().contains(studentEntity.getLanguage())) {
+        if (!teacherEntity.getLanguages().stream().anyMatch(languageEntity -> languageEntity.getId().equals(studentEntity.getLanguage().getId()))) {
             throw new BadLanguageException();
         }
         studentEntity.setTeacher(teacherEntity);

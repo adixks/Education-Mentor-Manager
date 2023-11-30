@@ -5,7 +5,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.util.List;
 import java.util.Set;
 
 @Data
@@ -28,7 +27,7 @@ public class TeacherFullDto {
     //    @NotEmptyFields
     @NotNull(message = "NULL_VALUE")
     @Size(min = 1, message = "LIST_TOO_SMALL")
-    private List<String> languages;
+    private Set<String> languages;
 
     private Set<Long> studentsListIds;
 

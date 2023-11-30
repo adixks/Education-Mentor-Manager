@@ -11,6 +11,9 @@ import pl.szlify.codingapi.model.dto.TeacherShortDto;
 import pl.szlify.codingapi.model.dto.TeacherFullDto;
 import pl.szlify.codingapi.model.TeacherEntity;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TeacherMapperTest {
@@ -34,7 +37,7 @@ public class TeacherMapperTest {
                 .setFirstName(faker.name().firstName())
                 .setLastName(faker.name().lastName())
                 .setDeleted(faker.bool().bool())
-                .setLanguages(faker.lorem().words());
+                .setLanguages(new HashSet<>(new ArrayList<>()));
 
         // When
         TeacherFullDto dto = teacherMapper.toFullDto(entity);
@@ -44,17 +47,16 @@ public class TeacherMapperTest {
         assertEquals(entity.getFirstName(), dto.getFirstName());
         assertEquals(entity.getLastName(), dto.getLastName());
         assertEquals(entity.getDeleted(), dto.getRemoved());
-        assertEquals(entity.getLanguages(), dto.getLanguages());
     }
 
     @Test
-    public void testFromEntityToNajwInfoDto() {
+    public void testToShortDto() {
         // Given
         TeacherEntity entity = new TeacherEntity()
                 .setId(faker.number().randomNumber())
                 .setFirstName(faker.name().firstName())
                 .setLastName(faker.name().lastName())
-                .setLanguages(faker.lorem().words());
+                .setLanguages(new HashSet<>(new ArrayList<>()));
 
         // When
         TeacherShortDto dto = teacherMapper.toShortDto(entity);
@@ -62,16 +64,15 @@ public class TeacherMapperTest {
         // Then
         assertEquals(entity.getFirstName(), dto.getFirstName());
         assertEquals(entity.getLastName(), dto.getLastName());
-        assertEquals(entity.getLanguages(), dto.getLanguages());
     }
 
     @Test
-    public void testFromNajwInfoToEntity() {
+    public void testToEntity() {
         // Given
         TeacherShortDto dto = new TeacherShortDto()
                 .setFirstName(faker.name().firstName())
                 .setLastName(faker.name().lastName())
-                .setLanguages(faker.lorem().words());
+                .setLanguages(new HashSet<>(new ArrayList<>()));
 
         // When
         TeacherEntity entity = teacherMapper.toEntity(dto);
@@ -79,25 +80,24 @@ public class TeacherMapperTest {
         // Then
         assertEquals(dto.getFirstName(), entity.getFirstName());
         assertEquals(dto.getLastName(), entity.getLastName());
-        assertEquals(dto.getLanguages(), entity.getLanguages());
         assertFalse(entity.getDeleted());
         assertTrue(entity.getStudentsList().isEmpty());
     }
 
     @Test
-    public void testFromNajwInfoAndEntityToEntity() {
+    public void testToEntityUpdate() {
         // Given
         TeacherEntity teacherEntity = new TeacherEntity()
                 .setId(faker.number().randomNumber())
                 .setFirstName(faker.name().firstName())
                 .setLastName(faker.name().lastName())
                 .setDeleted(false)
-                .setLanguages(faker.lorem().words());
+                .setLanguages(new HashSet<>(new ArrayList<>()));
 
         TeacherShortDto teacherShortDto = new TeacherShortDto()
                 .setFirstName(faker.name().firstName())
                 .setLastName(faker.name().lastName())
-                .setLanguages(faker.lorem().words());
+                .setLanguages(new HashSet<>(new ArrayList<>()));
 
         // When
         TeacherEntity entity = teacherMapper.toEntityUpdate(teacherEntity, teacherShortDto);
@@ -106,7 +106,6 @@ public class TeacherMapperTest {
         assertEquals(teacherEntity.getId(), entity.getId());
         assertEquals(teacherShortDto.getFirstName(), entity.getFirstName());
         assertEquals(teacherShortDto.getLastName(), entity.getLastName());
-        assertEquals(teacherShortDto.getLanguages(), entity.getLanguages());
         assertFalse(entity.getDeleted());
     }
 }
