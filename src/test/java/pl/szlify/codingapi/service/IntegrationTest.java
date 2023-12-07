@@ -40,7 +40,7 @@ import pl.szlify.codingapi.repository.TeacherRepository;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-@TestPropertySource(locations="classpath:application-dev.properties")
+@TestPropertySource(locations="classpath:application-prod.properties")
 @AutoConfigureMockMvc
 @Transactional
 //@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:beforeTestRun.sql")
