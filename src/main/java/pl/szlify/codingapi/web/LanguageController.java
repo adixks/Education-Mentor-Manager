@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.szlify.codingapi.model.dto.LanguageShortDto;
-import pl.szlify.codingapi.model.dto.LessonDto;
 import pl.szlify.codingapi.service.LanguageService;
 
 @RestController
@@ -19,7 +18,7 @@ public class LanguageController {
     private final LanguageService languageService;
 
     @GetMapping
-    public Page<LanguageShortDto> getAllLessons(@PageableDefault(size = 5) Pageable pageable) {
+    public Page<LanguageShortDto> getAllLanguage(@PageableDefault(size = 5) Pageable pageable) {
         return languageService.getList(pageable);
     }
 
