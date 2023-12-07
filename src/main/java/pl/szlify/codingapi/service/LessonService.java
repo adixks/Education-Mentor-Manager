@@ -14,20 +14,18 @@ import pl.szlify.codingapi.model.dto.LessonDto;
 import pl.szlify.codingapi.repository.StudentRepository;
 import pl.szlify.codingapi.repository.LessonRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
-import pl.szlify.codingapi.strategy.ListStrategy;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class LessonService implements ListStrategy<LessonDto> {
+public class LessonService {
     private final LessonRepository lessonRepository;
     private final TeacherRepository teacherRepository;
     private final StudentRepository studentRepository;
     private final LessonMapper lessonMapper;
 
-    @Override
     public Page<LessonDto> getList(Pageable pageable) {
         return lessonRepository.findAll(pageable).map(lessonMapper::toDto);
     }
