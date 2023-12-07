@@ -1,79 +1,49 @@
 package pl.szlify.codingapi.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.AfterEach;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.jdbc.Sql;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import pl.szlify.codingapi.model.dto.LanguageShortDto;
-import pl.szlify.codingapi.repository.LanguageRepository;
-import pl.szlify.codingapi.repository.LessonRepository;
-import pl.szlify.codingapi.repository.StudentRepository;
-import pl.szlify.codingapi.repository.TeacherRepository;
+import org.springframework.transaction.annotation.Transactional;
+import pl.szlify.codingapi.model.LanguageEntity;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@DataJpaTest
+@SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@Sql(scripts = "/data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Transactional
 public class IntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private LessonRepository lessonRepository;
-
-    @Autowired
-    private LanguageRepository languageRepository;
-
-    @Autowired
-    private StudentRepository studentRepository;
-
-    @Autowired
-    private TeacherRepository teacherRepository;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    private EntityManager entityManager;
 
     @AfterEach
-    public void tearDown() {
-        lessonRepository.deleteAll();
-        languageRepository.deleteAll();
-        studentRepository.deleteAll();
-        teacherRepository.deleteAll();
+    public void cleanupDatabase() {
+        entityManager.createQuery("DELETE FROM LanguageEntity").executeUpdate();
     }
 
     @Test
-    public void testAddLanguage() throws Exception {
-        // Given
-        LanguageShortDto newLanguageDto = new LanguageShortDto();
-        newLanguageDto.setName("Java");
+    public void getAllLanguage_ReturnsListOfLanguages() throws Exception {
+        LanguageEntity language = new LanguageEntity();
+        language.setName("Java");
+        entityManager.persist(language);
+        entityManager.flush();
 
-        // When
-        ResultActions resultActions = mockMvc.perform(post("http://localhost:8080/api/v1/language")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(newLanguageDto)));
-
-        // Then
-        resultActions.andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Java"))
-                .andExpect(jsonPath("$.id").exists());
-
-        assertNotNull(resultActions.andReturn().getResponse().getContentAsString());
+        mockMvc.perform(get("/api/v1/language"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].name").value("Java"));
     }
 
 
