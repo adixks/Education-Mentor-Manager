@@ -64,22 +64,24 @@ public class IntegrationTest {
         language.setName("Java");
         entityManager.persist(language);
 
-        LessonEntity lesson = new LessonEntity();
-        lesson.setDate(LocalDateTime.now());
-        entityManager.persist(lesson);
-
         StudentEntity student = new StudentEntity();
-        student.setFirstName("John");
-        student.setLastName("Doe");
+        student.setFirstName("Adrian");
+        student.setLastName("Kowalski");
         student.setLanguage(language);
         entityManager.persist(student);
 
         TeacherEntity teacher = new TeacherEntity();
-        teacher.setFirstName("Jane");
+        teacher.setFirstName("Jan");
         teacher.setLastName("Smith");
         teacher.setLanguages(new HashSet<>());
         teacher.getLanguages().add(language);
         entityManager.persist(teacher);
+
+        LessonEntity lesson = new LessonEntity();
+        lesson.setDate(LocalDateTime.now().plusYears(10L));
+        lesson.setTeacher(teacher);
+        lesson.setTeacher(teacher);
+        entityManager.persist(lesson);
 
         entityManager.flush();
     }
@@ -133,21 +135,21 @@ public class IntegrationTest {
     public void getTeachersList_ReturnsListOfTeachers() throws Exception {
         mockMvc.perform(get("/api/v1/teachers"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].firstName").value("Jane"));
+                .andExpect(jsonPath("$.content[0].firstName").value("Jan"));
     }
 
     @Test
     public void getTeacher_ReturnsTeacher() throws Exception {
         mockMvc.perform(get("/api/v1/teachers/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.firstName").value("Jane"));
+                .andExpect(jsonPath("$.firstName").value("Jan"));
     }
 
     @Test
     public void addTeacher_ReturnsNewTeacher() throws Exception {
         TeacherShortDto teacherShortDto = new TeacherShortDto();
-        teacherShortDto.setFirstName("John");
-        teacherShortDto.setLastName("Doe");
+        teacherShortDto.setFirstName("Adrian");
+        teacherShortDto.setLastName("Kowalski");
         teacherShortDto.setLanguages(new HashSet<>() {{
             add("Java");
         }});
@@ -156,8 +158,8 @@ public class IntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(teacherShortDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.firstName").value("John"))
-                .andExpect(jsonPath("$.lastName").value("Doe"));
+                .andExpect(jsonPath("$.firstName").value("Adrian"))
+                .andExpect(jsonPath("$.lastName").value("Kowalski"));
 
         List<TeacherEntity> teachers = teacherRepository.findAll();
         assertEquals(2, teachers.size());
@@ -166,8 +168,8 @@ public class IntegrationTest {
     @Test
     public void updateEntireTeacher_ReturnsUpdatedTeacher() throws Exception {
         TeacherShortDto teacherShortDto = new TeacherShortDto();
-        teacherShortDto.setFirstName("John");
-        teacherShortDto.setLastName("Doe");
+        teacherShortDto.setFirstName("Adrian");
+        teacherShortDto.setLastName("Kowalski");
         teacherShortDto.setLanguages(new HashSet<>() {{
             add("Java");
         }});
@@ -176,8 +178,8 @@ public class IntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(teacherShortDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.firstName").value("John"))
-                .andExpect(jsonPath("$.lastName").value("Doe"));
+                .andExpect(jsonPath("$.firstName").value("Adrian"))
+                .andExpect(jsonPath("$.lastName").value("Kowalski"));
 
         List<TeacherEntity> teachers = teacherRepository.findAll();
         assertEquals(1, teachers.size());
