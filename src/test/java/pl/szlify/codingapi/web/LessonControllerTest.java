@@ -33,7 +33,7 @@ public class LessonControllerTest {
     private LessonController lessonController;
 
     @Test
-    public void getAllLessons_shouldReturnListOfLessonsDto() {
+    public void getAllLessons_shouldReturnListOfLessonDtos() {
         // Given
         List<LessonDto> lessonsList = Arrays.asList(new LessonDto(), new LessonDto());
         Page<LessonDto> page = new PageImpl<>(lessonsList);
