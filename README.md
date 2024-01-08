@@ -43,7 +43,7 @@ Each defined entity goes through its unique three-tier process.
 - 🔄 Controller Actions: Precisely defined actions for each endpoint, facilitating navigation and understanding.
 - 🔄 Integration with CircleCi: Automation of the build and test process, guaranteeing high code quality.
 - 🔄 Docker Support: Our application is ready to run in a Docker container.
-- 🔄 Tests with JUnit 5 and Mockito 5: We provide solid testing to avoid unpleasant surprises.
+- 🔄 Unit and Integration Tests with JUnit 5 and Mockito 5: We provide solid testing to avoid unpleasant surprises.
 - 🔄 Faker for Controllers, Services, and Mappers: We create test data in a quick and efficient way.
 - 🔄 Validations with Custom Annotations: Ensuring data correctness at every stage.
 - 🔄 Pagination and Liquibase: Care for performance and data freshness.
