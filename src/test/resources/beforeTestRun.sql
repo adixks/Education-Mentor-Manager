@@ -1,0 +1,4 @@
+INSERT INTO LANGUAGE (name) VALUES ('Java');
+INSERT INTO TEACHER (firstName, lastName) VALUES ('Jan', 'Smith');
+INSERT INTO STUDENT (firstName, lastName, LANGUAGE_ID, TEACHER_ID) VALUES ('Adrian', 'Kowalski', 1, 1);
+INSERT INTO LESSON (date, STUDENT_ID, TEACHER_ID) VALUES ('2026-12-07 10:00:00', 1, 1);
