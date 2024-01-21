@@ -2,6 +2,9 @@
 
 Thank you for your interest in my application #Kursy! Below you will find a brief overview of features and highlights that distinguish my solution.
 
+## Tools and Components 🔧
+[Java 17, Spring Boot 3, Spring Validation, JPA, REST API, MySQL, Liquibase, CI/DI (CircleCi), Lombock, JUnit 5, Mockito 5, Integration Tests Faker, JaCoCo, Pagination, Profiles for Dev and Prod]
+
 ## Application Structure 🏗️
 
 My application is solidly built on a three-tier structure, providing clarity and efficiency:
