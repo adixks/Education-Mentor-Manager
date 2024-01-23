@@ -1,20 +1,30 @@
 version: '3'
+
 services:
-  app:
-    build: .
-    image: openjdk:17-jdk-alpine
-    volumes:
-      - .:/app
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
-    command: ["java", "-jar", "/app/target/coding-api-0.0.1-SNAPSHOT.jar"]
-  db:
-    image: mysql:8.0.28
+
+  database:
+    image: mysql:5.7
+    container_name: database
     environment:
-      MYSQL_ROOT_USERNAME: root
-      MYSQL_ROOT_PASSWORD: 1234
       MYSQL_DATABASE: coding
+      DB_URL: database/coding
+      DB_USERNAME: root
+      MYSQL_ROOT_PASSWORD: 1234
     ports:
-      - "3307:3306"
+      - "3306:3306"
+
+  coding_api:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      DB_URL: database/coding
+      DB_USERNAME: root
+      DB_PASSWORD: 1234
+    depends_on:
+      - database
+
+networks:
+  default:
+    external:
+      name: coding_network
