@@ -15,7 +15,6 @@ import pl.szlify.codingapi.model.dto.TeacherShortDto;
 import pl.szlify.codingapi.repository.LanguageRepository;
 import pl.szlify.codingapi.repository.LessonRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
-import pl.szlify.codingapi.strategy.ListStrategy;
 
 import java.util.HashSet;
 import java.util.List;
@@ -23,13 +22,12 @@ import java.util.Set;
 
 @Service
 @AllArgsConstructor
-public class TeacherService implements ListStrategy<TeacherShortDto> {
+public class TeacherService {
     private final TeacherRepository teacherRepository;
     private final LessonRepository lessonRepository;
     private final LanguageRepository languageRepository;
     private final TeacherMapper teacherMapper;
 
-    @Override
     public Page<TeacherShortDto> getList(Pageable pageable) {
         return teacherRepository.findAll(pageable).map(teacherMapper::toShortDto);
     }
@@ -116,7 +114,6 @@ public class TeacherService implements ListStrategy<TeacherShortDto> {
         if (existsDate) {
             throw new LessonInFutureException();
         }
-        teacher.setDeleted(true);
-        teacherRepository.save(teacher);
+        teacherRepository.delete(teacher);
     }
 }

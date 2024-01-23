@@ -14,18 +14,16 @@ import pl.szlify.codingapi.repository.LessonRepository;
 import pl.szlify.codingapi.repository.StudentRepository;
 import pl.szlify.codingapi.repository.TeacherRepository;
 import pl.szlify.codingapi.mapper.StudentMapper;
-import pl.szlify.codingapi.strategy.ListStrategy;
 
 @Service
 @RequiredArgsConstructor
-public class StudentService implements ListStrategy<StudentShortDto> {
+public class StudentService {
     private final StudentRepository studentRepository;
     private final LessonRepository lessonRepository;
     private final TeacherRepository teacherRepository;
     private final LanguageRepository languageRepository;
     private final StudentMapper studentMapper;
 
-    @Override
     public Page<StudentShortDto> getList(Pageable pageable) {
         return studentRepository.findAll(pageable).map(studentMapper::toShortDto);
     }
