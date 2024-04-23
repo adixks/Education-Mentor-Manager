@@ -1,4 +1,4 @@
-# Kursy - Educational Application 🚀
+# Education Mentor Manager 🚀
 
 Thank you for your interest in my application #Kursy! Below you will find a brief overview of features and highlights that distinguish my solution.
 
