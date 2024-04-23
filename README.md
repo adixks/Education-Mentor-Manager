@@ -1,6 +1,6 @@
 # Education Mentor Manager 🚀
 
-Thank you for your interest in my application #Kursy! Below you will find a brief overview of features and highlights that distinguish my solution.
+Thank you for your interest in my application Education Mentor Manager! Below you will find a brief overview of features and highlights that distinguish my solution.
 
 ## Tools and Components 🔧
 [Java 17, Spring Boot 3, Spring Validation, Spring Web MVC, JPA, REST API, MySQL, Liquibase, CI/DI (CircleCi), Lombok, JUnit 5, Mockito 5, Integration Tests, Faker, JaCoCo, Pagination, Profiles for Dev and Prod]
