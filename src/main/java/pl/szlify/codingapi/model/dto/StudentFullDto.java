@@ -1,10 +1,10 @@
 package pl.szlify.codingapi.model.dto;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Set;
 
 @Data
@@ -12,17 +12,17 @@ import java.util.Set;
 public class StudentFullDto {
     private Long id;
 
-//    @NotEmptyFields
+    //    @NotEmptyFields
     @NotNull(message = "NULL_VALUE")
     @Size(min = 2, message = "VALUE_TOO_SMALL")
     private String firstName;
 
-//    @NotEmptyFields
+    //    @NotEmptyFields
     @NotNull(message = "NULL_VALUE")
     @Size(min = 2, message = "VALUE_TOO_SMALL")
     private String lastName;
 
-//    @NotEmptyFields
+    //    @NotEmptyFields
     @NotNull(message = "NULL_VALUE")
     @Size(min = 2, message = "VALUE_TOO_SMALL")
     private String language;

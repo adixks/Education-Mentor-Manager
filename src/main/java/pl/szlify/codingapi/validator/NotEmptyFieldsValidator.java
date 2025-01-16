@@ -1,7 +1,7 @@
 package pl.szlify.codingapi.validator;
 
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 import pl.szlify.codingapi.exceptions.BadInputException;
 
 import java.util.List;

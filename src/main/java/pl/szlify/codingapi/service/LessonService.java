@@ -99,7 +99,6 @@ public class LessonService {
         return lessonMapper.toDto(lessonRepository.save(lessonEntity));
     }
 
-
     public void deleteLesson(Long id) {
         LessonEntity lessonEntity = lessonRepository.findById(id)
                 .orElseThrow(NoLessonsException::new);
