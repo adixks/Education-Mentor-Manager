@@ -13,7 +13,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = "version")
+@ToString(exclude = {"version", "password"})
 @Accessors(chain = true)
 public class TeacherEntity {
     @Id
@@ -41,6 +41,15 @@ public class TeacherEntity {
             joinColumns = @JoinColumn(name = "TEACHER_ID"),
             inverseJoinColumns = @JoinColumn(name = "LANGUAGE_ID"))
     private Set<LanguageEntity> languages;
+
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Column(nullable = false)
+    private String role = "TEACHER";
 
     @Transient
     public void setVersion(int version) {}

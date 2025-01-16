@@ -1,10 +1,10 @@
 package pl.szlify.codingapi.validator;
 
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
 import pl.szlify.codingapi.exceptions.BadInputException;
 import pl.szlify.codingapi.exceptions.LessonInPastException;
 
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 import java.time.LocalDateTime;
 
 public class NotDateInPastValidator implements ConstraintValidator<NotDateInPast, Object> {

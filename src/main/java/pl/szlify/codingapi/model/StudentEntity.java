@@ -13,7 +13,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = "version")
+@ToString(exclude = {"version", "password"})
 @Accessors(chain = true)
 public class StudentEntity {
     @Id
@@ -39,6 +39,15 @@ public class StudentEntity {
 
     @OneToMany(mappedBy = "student")
     private Set<LessonEntity> lessons;
+
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Column(nullable = false)
+    private String role = "STUDENT";
 
     @Transient
     public void setVersion(int version) {}

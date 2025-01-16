@@ -3,6 +3,7 @@ package pl.szlify.codingapi.service;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.szlify.codingapi.exceptions.LessonInFutureException;
@@ -11,6 +12,7 @@ import pl.szlify.codingapi.model.TeacherEntity;
 import pl.szlify.codingapi.exceptions.LackOfTeacherException;
 import pl.szlify.codingapi.mapper.TeacherMapper;
 import pl.szlify.codingapi.model.dto.TeacherFullDto;
+import pl.szlify.codingapi.model.dto.TeacherRegistrationDto;
 import pl.szlify.codingapi.model.dto.TeacherShortDto;
 import pl.szlify.codingapi.repository.LanguageRepository;
 import pl.szlify.codingapi.repository.LessonRepository;
@@ -27,6 +29,7 @@ public class TeacherService {
     private final LessonRepository lessonRepository;
     private final LanguageRepository languageRepository;
     private final TeacherMapper teacherMapper;
+    private final PasswordEncoder passwordEncoder;
 
     public Page<TeacherShortDto> getList(Pageable pageable) {
         return teacherRepository.findAll(pageable).map(teacherMapper::toShortDto);
@@ -84,6 +87,7 @@ public class TeacherService {
         updatedTeacherEntity.setLanguages(languages);
         return teacherMapper.toShortDto(teacherRepository.save(updatedTeacherEntity));
     }
+
     public TeacherShortDto updateTeacherLanguagesList(Long id, List<String> languagesList) {
         TeacherEntity teacherEntity = teacherRepository.findById(id)
                 .orElseThrow(LackOfTeacherException::new);
@@ -115,5 +119,15 @@ public class TeacherService {
             throw new LessonInFutureException();
         }
         teacherRepository.delete(teacher);
+    }
+
+    public void registerTeacher(TeacherRegistrationDto teacherDto) {
+        TeacherEntity teacher = new TeacherEntity()
+                .setFirstName(teacherDto.getFirstName())
+                .setLastName(teacherDto.getLastName())
+                .setUsername(teacherDto.getUsername())
+                .setPassword(passwordEncoder.encode(teacherDto.getPassword()))
+                .setRole("TEACHER");
+        teacherRepository.save(teacher);
     }
 }
